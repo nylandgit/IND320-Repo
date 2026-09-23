@@ -10,7 +10,25 @@ DATA_PATH = Path(__file__).parent.parent / "data" / "reservoirs.csv"
 def load_data():
 	return pd.read_csv(DATA_PATH)
 
+
+# Translating Norwegian column names into understandable English.
+df = df.rename(columns={
+    "dato_Id": "Date",
+    "omrType": "Area Type",
+    "omrnr": "Area Number",
+    "iso_aar": "ISO Year",
+    "iso_uke": "ISO Week",
+    "fyllingsgrad": "Filling Ratio",
+    "kapasitet_TWh": "Capacity TWh",
+    "fylling_TWh": "Filling TWh",
+    "neste_Publiseringsdato": "Next Publishing Date",
+    "fyllingsgrad_forrige_uke": "FR Last Week",
+    "endring_fyllingsgrad": "Change FR",
+})
+
+
 df = load_data()
+
 
 st.title("Reservoir data")
 st.write(f"Loaded {len(df):,} rows from {DATA_PATH.name}.")
