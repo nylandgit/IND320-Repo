@@ -57,10 +57,10 @@ for column in df.columns:
         "First month": values if pd.api.types.is_numeric_dtype(df[column]) else [],
     })
 
+# Creating new summary df with selected data.
 summary_df = pd.DataFrame(summary_rows)
 
-
-
+# Creating the line chart table in Streamlit.
 st.write(f"Line charts show values from the first month: {first_month}.")
 st.dataframe(
     summary_df,
