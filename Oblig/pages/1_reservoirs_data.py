@@ -10,6 +10,7 @@ DATA_PATH = Path(__file__).parent.parent / "data" / "reservoirs.csv"
 def load_data():
 	return pd.read_csv(DATA_PATH)
 
+df = load_data()
 
 # Translating Norwegian column names into understandable English.
 df = df.rename(columns={
@@ -25,9 +26,6 @@ df = df.rename(columns={
     "fyllingsgrad_forrige_uke": "FR Last Week",
     "endring_fyllingsgrad": "Change FR",
 })
-
-
-df = load_data()
 
 
 st.title("Reservoir data")
