@@ -38,13 +38,11 @@ st.dataframe(
     use_container_width=True,
     column_config={
         "Date": st.column_config.DateColumn(
-            "Date",
             format="DD.MM.YYYY",
         ),
 
         "Next Publishing Date": st.column_config.DateColumn(
-                    "Date",
-                    format="DD.MM.YYYY"
-					),
+            format="DD.MM.YYYY"
+        ),
     },
 )
