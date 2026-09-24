@@ -41,5 +41,10 @@ st.dataframe(
             "Date",
             format="DD.MM.YYYY",
         ),
+
+        "Next Publishing Date": st.column_config.DateColumn(
+                    "Date",
+                    format="DD.MM.YYYY"
+					),
     },
 )
