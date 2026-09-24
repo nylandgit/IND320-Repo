@@ -33,4 +33,13 @@ df = df.sort_values("Date", ascending=True)
 
 st.title("Reservoir data")
 st.write(f"Loaded {len(df):,} rows from {DATA_PATH.name}.")
-st.dataframe(df.head(), use_container_width=True)
+st.dataframe(
+    df.head(),
+    use_container_width=True,
+    column_config={
+        "Date": st.column_config.DateColumn(
+            "Date",
+            format="DD.MM.YYYY",
+        ),
+    },
+)
