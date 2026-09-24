@@ -27,6 +27,9 @@ df = df.rename(columns={
     "endring_fyllingsgrad": "Change FR",
 })
 
+# Sort by date, oldest to newest.
+df["Date"] = pd.to_datetime(df["Date"])
+df = df.sort_values("Date", ascending=True)
 
 st.title("Reservoir data")
 st.write(f"Loaded {len(df):,} rows from {DATA_PATH.name}.")
