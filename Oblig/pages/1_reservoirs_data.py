@@ -38,6 +38,14 @@ st.write(f"Loaded {len(df):,} rows from {DATA_PATH.name}.")
 first_month = df["Date"].dt.to_period("M").min()    # dt = datetime
 first_month_data = df[df["Date"].dt.to_period("M") == first_month]
 
+columns_to_plot = [
+    "Filling Ratio",
+    "Capacity TWh",
+    "Filling TWh",
+    "FR Last Week",
+    "Change FR",
+]
+
 
 
 # Transforming data table into summary table w/ one row per column.
@@ -49,11 +57,10 @@ first_month_data = df[df["Date"].dt.to_period("M") == first_month]
 # .tolist() to convert the output of the ...[column] function, as the
 # output is a pandas series.
 summary_rows = []
-for column in df.columns:
+for column in columns_to_plot:
     values = first_month_data[column].tolist()
     summary_rows.append({
         "Column": column,
-        "Data type": str(df[column].dtype),
         "First month": values if pd.api.types.is_numeric_dtype(df[column]) else [],
     })
 
