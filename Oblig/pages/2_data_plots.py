@@ -41,6 +41,8 @@ st.write(f"Loaded {len(df):,} rows from {DATA_PATH.name}.")
 
 """ Plotting """
 
+# Selecting csv columns to include in chart. Plotting ISO weeks/years
+# is considered unnecessary.
 columns_to_plot = [
     "Filling Ratio",
     "Filling TWh",
@@ -48,15 +50,20 @@ columns_to_plot = [
     "Change FR",
 ]
 
-
+# Selecting data from specific area type and number.
 plot_area_type = "EL"
 plot_area_number = 1
+
+# Selecting data from df matching specified area type and number.
+# Plotting all data in chart will lead to overlapping dates, as
+# multiple area types and numbers share the same dates.
 plot_data = df[
     (df["Area Type"] == plot_area_type)
     & (df["Area Number"] == plot_area_number)
 ][["Date", *columns_to_plot]].set_index("Date")
 
-available_months = plot_data.index.to_period("M").unique().tolist()
+
+available_months = plot_data.index.to_period("M").tolist()
 start_month, end_month = st.select_slider(
     "Select months",
     options=available_months,
