@@ -42,9 +42,9 @@ columns_to_plot = [
     "Change FR",
 ]
 
-st.line_chart(df, x="Date", y=columns_to_plot)
+#st.line_chart(df, x="Date", y=columns_to_plot)
 
-"""
+
 plot_area_type = "EL"
 plot_area_number = 1
 plot_data = df[
@@ -58,4 +58,3 @@ st.write(
 )
 st.line_chart(plot_data, y=columns_to_plot)
 
-"""
