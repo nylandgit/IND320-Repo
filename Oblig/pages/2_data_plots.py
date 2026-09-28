@@ -5,15 +5,13 @@ import streamlit as st
 # Loading csv into df.
 df = load_data()
 
-"""
 # Creating page title and csv load information.
-st.title("Reservoir data")
-st.write(f"Loaded {len(df):,} rows from {DATA_PATH.name}.")
-"""
+st.title("Data Plots")
+st.write(f"Select data type and range to plot.")
 
 
 
-""" Plotting Setup """
+# --- Plotting Setup ---
 
 # Selecting csv columns to include in chart. Plotting ISO weeks/years
 # is considered unnecessary.
@@ -38,7 +36,7 @@ plot_data = df[
 
 
 
-""" Selection Slider """
+# --- Selection Slider ---
 
 # Preparing selectable months for selection slider using list:
 # * plot_data.index selects the index values (Date) for each column
@@ -69,7 +67,7 @@ selected_data = plot_data.loc[
 
 
 
-""" Selection Box """
+# --- Selection Box ---
 
 # Creating selection box.
 selected_column = st.selectbox(
@@ -85,7 +83,7 @@ selected_columns = (
 
 
 
-""" Plotting """
+# --- Plotting ---
 
 # Creating plot based on selected colum(s) and data.
 st.write(

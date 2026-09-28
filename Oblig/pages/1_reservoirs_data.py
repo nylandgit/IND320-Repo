@@ -11,7 +11,7 @@ st.write(f"Loaded {len(df):,} rows from {DATA_PATH.name}.")
 
 
 
-""" Plotting """
+# --- Plotting Setup ---
 
 # Selecting csv columns to include in chart. Plotting ISO weeks/years
 # is considered unnecessary.
