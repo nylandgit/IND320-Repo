@@ -2,14 +2,16 @@ import pandas as pd
 import streamlit as st
 from pathlib import Path
 
-# Define .csv path relative to data page .py file.
+# Defining .csv path relative to data page .py file.
 DATA_PATH = Path(__file__).parent.parent / "data" / "reservoirs.csv"
 
-# Instruct Streamlit to cache load data function. (?)
+# Instructing Streamlit to cache load data function so the csv isn't
+# reloaded with every Streamlit page action.
 @st.cache_data
 def load_data():
 	return pd.read_csv(DATA_PATH)
 
+# Loading csv into df.
 df = load_data()
 
 # Translating Norwegian column names into understandable English.
@@ -27,12 +29,17 @@ df = df.rename(columns={
     "endring_fyllingsgrad": "Change FR",
 })
 
-# Sort by date, oldest to newest.
+# Sorting by date, oldest to newest.
 df["Date"] = pd.to_datetime(df["Date"])
 df = df.sort_values("Date", ascending=True)
 
+# Creating page title and csv load information.
 st.title("Reservoir data")
 st.write(f"Loaded {len(df):,} rows from {DATA_PATH.name}.")
+
+
+
+""" Plotting """
 
 columns_to_plot = [
     "Filling Ratio",
@@ -40,8 +47,6 @@ columns_to_plot = [
     "FR Last Week",
     "Change FR",
 ]
-
-#st.line_chart(df, x="Date", y=columns_to_plot)
 
 
 plot_area_type = "EL"
@@ -51,9 +56,35 @@ plot_data = df[
     & (df["Area Number"] == plot_area_number)
 ][["Date", *columns_to_plot]].set_index("Date")
 
+available_months = plot_data.index.to_period("M").unique().tolist()
+start_month, end_month = st.select_slider(
+    "Select months",
+    options=available_months,
+    value=(available_months[0], available_months[0]),
+    format_func=str,
+)
+plot_months = plot_data.index.to_period("M")
+selected_data = plot_data.loc[
+    (plot_months >= start_month) & (plot_months <= end_month)
+]
+
+selected_column = st.selectbox(
+    "Column to plot",
+    options=["All columns", *columns_to_plot],
+)
+selected_columns = (
+    columns_to_plot if selected_column == "All columns" else [selected_column]
+)
+
 st.write(
     f"Showing {plot_area_type} area {plot_area_number} "
-    f"from {plot_data.index.min().date()} to {plot_data.index.max().date()}."
+    f"from {selected_data.index.min().date()} to {selected_data.index.max().date()}."
 )
-st.line_chart(plot_data, y=columns_to_plot)
+st.subheader("Reservoir metrics over time")
+st.line_chart(
+    selected_data,
+    y=selected_columns,
+    x_label="Date",
+    y_label="Metric value",
+)
 
