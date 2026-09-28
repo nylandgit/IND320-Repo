@@ -62,11 +62,13 @@ plot_data = df[
     & (df["Area Number"] == plot_area_number)
 ][["Date", *columns_to_plot]].set_index("Date")
 
-# Creating chart w/ title and information.
+# Creating chart title and information.
 st.write(
     f"Showing {plot_area_type} area {plot_area_number} "
     f"from {plot_data.index.min().date()} to {plot_data.index.max().date()}."
 )
+
+# Creating two-column table w/ column titles and LineChartColumn().
 chart_table = pd.DataFrame(
     {
         "Data category": columns_to_plot,
