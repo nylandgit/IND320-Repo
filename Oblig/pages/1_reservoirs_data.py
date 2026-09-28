@@ -2,14 +2,16 @@ import pandas as pd
 import streamlit as st
 from pathlib import Path
 
-# Define .csv path relative to data page .py file.
+# Defining .csv path relative to data page .py file.
 DATA_PATH = Path(__file__).parent.parent / "data" / "reservoirs.csv"
 
-# Instruct Streamlit to cache load data function. (?)
+# Instructing Streamlit to cache load data function so the csv isn't
+# reloaded with every Streamlit page action.
 @st.cache_data
 def load_data():
 	return pd.read_csv(DATA_PATH)
 
+# Loading csv into df.
 df = load_data()
 
 # Translating Norwegian column names into understandable English.
@@ -27,13 +29,20 @@ df = df.rename(columns={
     "endring_fyllingsgrad": "Change FR",
 })
 
-# Sort by date, oldest to newest.
+# Sorting by date, oldest to newest.
 df["Date"] = pd.to_datetime(df["Date"])
 df = df.sort_values("Date", ascending=True)
 
+# Creating page title and csv load information.
 st.title("Reservoir data")
 st.write(f"Loaded {len(df):,} rows from {DATA_PATH.name}.")
 
+
+
+""" Plotting """
+
+# Selecting csv columns to include in chart. Plotting ISO weeks/years
+# is considered unnecessary.
 columns_to_plot = [
     "Filling Ratio",
     "Filling TWh",
@@ -41,16 +50,19 @@ columns_to_plot = [
     "Change FR",
 ]
 
-#st.line_chart(df, x="Date", y=columns_to_plot)
-
-
+# Selecting data from specific area type and number.
 plot_area_type = "EL"
 plot_area_number = 1
+
+# Selecting data from df matching specified area type and number.
+# Plotting all data in chart will lead to overlapping dates, as
+# multiple area types and numbers share the same dates.
 plot_data = df[
     (df["Area Type"] == plot_area_type)
     & (df["Area Number"] == plot_area_number)
 ][["Date", *columns_to_plot]].set_index("Date")
 
+# Creating chart w/ title and information.
 st.write(
     f"Showing {plot_area_type} area {plot_area_number} "
     f"from {plot_data.index.min().date()} to {plot_data.index.max().date()}."
