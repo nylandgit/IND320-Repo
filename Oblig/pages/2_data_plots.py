@@ -63,7 +63,7 @@ plot_data = df[
 ][["Date", *columns_to_plot]].set_index("Date")
 
 
-available_months = plot_data.index.to_period("M").tolist()
+available_months = plot_data.index.to_period("M").unique().tolist()
 start_month, end_month = st.select_slider(
     "Select months",
     options=available_months,
