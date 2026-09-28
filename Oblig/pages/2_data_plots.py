@@ -1,41 +1,15 @@
+from modules.db import load_data
 import pandas as pd
 import streamlit as st
-from pathlib import Path
-
-# Defining .csv path relative to data page .py file.
-DATA_PATH = Path(__file__).parent.parent / "data" / "reservoirs.csv"
-
-# Instructing Streamlit to cache load data function so the csv isn't
-# reloaded with every Streamlit page action.
-@st.cache_data
-def load_data():
-	return pd.read_csv(DATA_PATH)
 
 # Loading csv into df.
 df = load_data()
 
-# Translating Norwegian column names into understandable English.
-df = df.rename(columns={
-    "dato_Id": "Date",
-    "omrType": "Area Type",
-    "omrnr": "Area Number",
-    "iso_aar": "ISO Year",
-    "iso_uke": "ISO Week",
-    "fyllingsgrad": "Filling Ratio",
-    "kapasitet_TWh": "Capacity TWh",
-    "fylling_TWh": "Filling TWh",
-    "neste_Publiseringsdato": "Next Publishing Date",
-    "fyllingsgrad_forrige_uke": "FR Last Week",
-    "endring_fyllingsgrad": "Change FR",
-})
-
-# Sorting by date, oldest to newest.
-df["Date"] = pd.to_datetime(df["Date"])
-df = df.sort_values("Date", ascending=True)
-
+"""
 # Creating page title and csv load information.
 st.title("Reservoir data")
 st.write(f"Loaded {len(df):,} rows from {DATA_PATH.name}.")
+"""
 
 
 
@@ -64,7 +38,7 @@ plot_data = df[
 
 
 
-""" Selection Slider and Box """
+""" Selection Slider """
 
 # Preparing selectable months for selection slider using list:
 # * plot_data.index selects the index values (Date) for each column
@@ -92,6 +66,10 @@ plot_months = plot_data.index.to_period("M")
 selected_data = plot_data.loc[
     (plot_months >= start_month) & (plot_months <= end_month)
 ]
+
+
+
+""" Selection Box """
 
 # Creating selection box.
 selected_column = st.selectbox(
