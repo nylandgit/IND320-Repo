@@ -34,10 +34,6 @@ df = df.sort_values("Date", ascending=True)
 st.title("Reservoir data")
 st.write(f"Loaded {len(df):,} rows from {DATA_PATH.name}.")
 
-# Selecting the first month of data for displaying.
-first_month = df["Date"].dt.to_period("M").min()    # dt = datetime
-first_month_data = df[df["Date"].dt.to_period("M") == first_month]
-
 columns_to_plot = [
     "Filling Ratio",
     "Capacity TWh",
@@ -46,37 +42,20 @@ columns_to_plot = [
     "Change FR",
 ]
 
+st.line_chart(df, x="Date", y=columns_to_plot)
 
+"""
+plot_area_type = "EL"
+plot_area_number = 1
+plot_data = df[
+    (df["Area Type"] == plot_area_type)
+    & (df["Area Number"] == plot_area_number)
+][["Date", *columns_to_plot]].set_index("Date")
 
-# Transforming data table into summary table w/ one row per column.
-# This is achieved by creating a list of dictionaries, where each
-# dictionary is the first month of a selected df column.
-#
-# Additional notes:
-# LinceChartColumn() needs values stored as Pythin lists, so we use
-# .tolist() to convert the output of the ...[column] function, as the
-# output is a pandas series.
-summary_rows = []
-for column in columns_to_plot:
-    values = first_month_data[column].tolist()
-    summary_rows.append({
-        "Column": column,
-        "First month": values if pd.api.types.is_numeric_dtype(df[column]) else [],
-    })
-
-# Creating new summary df with selected data.
-summary_df = pd.DataFrame(summary_rows)
-
-# Creating the line chart table in Streamlit.
-st.write(f"Line charts show values from the first month: {first_month}.")
-st.dataframe(
-    summary_df,
-    use_container_width=True,
-    hide_index=True,
-    column_config={
-        "First month": st.column_config.LineChartColumn(
-            "First month",
-            width="large",
-        ),
-    },
+st.write(
+    f"Showing {plot_area_type} area {plot_area_number} "
+    f"from {plot_data.index.min().date()} to {plot_data.index.max().date()}."
 )
+st.line_chart(plot_data, y=columns_to_plot)
+
+"""
