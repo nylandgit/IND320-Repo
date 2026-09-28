@@ -109,6 +109,7 @@ selected_columns = (
 
 """ Plotting """
 
+# Creating plot based on selected colum(s) and data.
 st.write(
     f"Showing {plot_area_type} area {plot_area_number} "
     f"from {selected_data.index.min().date()} to {selected_data.index.max().date()}."
@@ -120,4 +121,3 @@ st.line_chart(
     x_label="Date",
     y_label="Metric value",
 )
-
