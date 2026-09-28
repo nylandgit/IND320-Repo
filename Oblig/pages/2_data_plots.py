@@ -36,7 +36,6 @@ st.write(f"Loaded {len(df):,} rows from {DATA_PATH.name}.")
 
 columns_to_plot = [
     "Filling Ratio",
-    "Capacity TWh",
     "Filling TWh",
     "FR Last Week",
     "Change FR",
