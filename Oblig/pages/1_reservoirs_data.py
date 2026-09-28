@@ -56,5 +56,17 @@ st.write(
     f"Showing {plot_area_type} area {plot_area_number} "
     f"from {plot_data.index.min().date()} to {plot_data.index.max().date()}."
 )
-st.line_chart(plot_data, y=columns_to_plot)
-
+chart_table = pd.DataFrame(
+    {
+        "Data category": columns_to_plot,
+        "Flowchart": [plot_data[column].dropna().tolist() for column in columns_to_plot],
+    }
+)
+st.dataframe(
+    chart_table,
+    column_config={
+        "Flowchart": st.column_config.LineChartColumn("Flowchart"),
+    },
+    hide_index=True,
+    use_container_width=True,
+)
