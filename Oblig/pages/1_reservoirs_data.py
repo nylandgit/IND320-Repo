@@ -27,19 +27,19 @@ plot_area_type = st.radio(
     "Select area type",
     options=["EL", "NO", "VASS"],
 )
-plot_area_number = 1
+#plot_area_number = 0 if plot_area_type == "NO" else 1
 
 # Selecting data from df matching specified area type and number.
 # Plotting all data in chart will lead to overlapping dates, as
 # multiple area types and numbers share the same dates.
 plot_data = df[
     (df["Area Type"] == plot_area_type)
-    & (df["Area Number"] == plot_area_number)
+    #& (df["Area Number"] == plot_area_number)
 ][["Date", *columns_to_plot]].set_index("Date")
 
 # Creating chart title and information.
 st.write(
-    f"Showing {plot_area_type} area {plot_area_number} "
+    f"Showing {plot_area_type} area."
     f"from {plot_data.index.min().date()} to {plot_data.index.max().date()}."
 )
 
