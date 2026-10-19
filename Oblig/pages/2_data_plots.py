@@ -1,4 +1,4 @@
-from modules.db import load_data
+from modules.api import load_data
 import pandas as pd
 import streamlit as st
 

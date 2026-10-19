@@ -5,7 +5,7 @@ import streamlit as st
 # Loading API into df.
 df = load_data()
 
-# Creating page title and csv load information.
+# Creating page title and API load information.
 st.title("Reservoir data")
 st.write(f"Loaded {len(df):,} rows.")
 
@@ -13,7 +13,7 @@ st.write(f"Loaded {len(df):,} rows.")
 
 # --- Plotting Setup ---
 
-# Selecting csv columns to include in chart. Plotting ISO weeks/years
+# Selecting df columns to include in chart. Plotting ISO weeks/years
 # is considered unnecessary.
 columns_to_plot = [
     "Filling Ratio",
@@ -22,8 +22,11 @@ columns_to_plot = [
     "Change FR",
 ]
 
-# Selecting data from specific area type and number.
-plot_area_type = "EL"
+# Taking user input to decide which area type is to be plotted.
+plot_area_type = st.radio(
+    "Select area type",
+    options=["EL", "NO", "VASS"],
+)
 plot_area_number = 1
 
 # Selecting data from df matching specified area type and number.
