@@ -1,13 +1,13 @@
-from modules.db import DATA_PATH, load_data
+from modules.api import load_data
 import pandas as pd
 import streamlit as st
 
-# Loading csv into df.
+# Loading API into df.
 df = load_data()
 
 # Creating page title and csv load information.
 st.title("Reservoir data")
-st.write(f"Loaded {len(df):,} rows from {DATA_PATH.name}.")
+st.write(f"Loaded {len(df):,} rows.")
 
 
 

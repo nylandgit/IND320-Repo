@@ -4,18 +4,18 @@ import streamlit as st
 from pyjstat import pyjstat
 import requests
 
-url = "https://biapi.nve.no/magasinstatistikk/api/Magasinstatistikk/HentOffentligData"
-
-# Retrieving data from API with .get().
-response = requests.get(url, timeout=30)
-response.raise_for_status()
-
+#url = "https://biapi.nve.no/magasinstatistikk/api/Magasinstatistikk/HentOffentligData"
 
 # Instructing Streamlit to cache load data function so the data isn't
 # reloaded with every Streamlit page action.
 @st.cache_data
-def load_data():
-    df = pd.read_csv(response)
+def load_data(url="https://biapi.nve.no/magasinstatistikk/api/Magasinstatistikk/HentOffentligData"):
+    
+    # Retrieving data from API with .get().
+    response = requests.get(url, timeout=30)
+    response.raise_for_status()
+    
+    df = pd.DataFrame(response.json())
 
     # Translating Norwegian column names into understandable English.
     df = df.rename(columns={
