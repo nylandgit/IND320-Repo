@@ -27,34 +27,32 @@ plot_area_type = st.radio(
     "Select area type",
     options=["EL", "NO", "VASS"],
 )
-#plot_area_number = 0 if plot_area_type == "NO" else 1
 
-# Selecting data from df matching specified area type and number.
-# Plotting all data in chart will lead to overlapping dates, as
-# multiple area types and numbers share the same dates.
-plot_data = df[
-    (df["Area Type"] == plot_area_type)
-    #& (df["Area Number"] == plot_area_number)
-][["Date", *columns_to_plot]].set_index("Date")
+# Selecting data for the chosen area type. Each area number gets its
+# own sparkline column so values from different regions are not mixed.
+plot_data = df[df["Area Type"] == plot_area_type]
+area_numbers = sorted(plot_data["Area Number"].unique())
 
 # Creating chart title and information.
 st.write(
-    f"Showing {plot_area_type} area."
-    f"from {plot_data.index.min().date()} to {plot_data.index.max().date()}."
+    f"Showing {plot_area_type} areas {', '.join(map(str, area_numbers))} "
+    f"from {plot_data['Date'].min().date()} to {plot_data['Date'].max().date()}."
 )
 
-# Creating two-column table w/ column titles and LineChartColumn().
-chart_table = pd.DataFrame(
-    {
-        "Data category": columns_to_plot,
-        "Flowchart": [plot_data[column].dropna().tolist() for column in columns_to_plot],
-    }
-)
+# Creating one LineChartColumn per area number.
+chart_table = pd.DataFrame({"Data category": columns_to_plot})
+column_config = {}
+for area_number in area_numbers:
+    area_data = plot_data[plot_data["Area Number"] == area_number]
+    area_column = f"Area {area_number}"
+    chart_table[area_column] = [
+        area_data[column].dropna().tolist() for column in columns_to_plot
+    ]
+    column_config[area_column] = st.column_config.LineChartColumn(area_column)
+
 st.dataframe(
     chart_table,
-    column_config={
-        "Flowchart": st.column_config.LineChartColumn("Flowchart"),
-    },
+    column_config=column_config,
     hide_index=True,
     use_container_width=True,
 )
