@@ -28,7 +28,7 @@ plot_area_type = st.radio(
     options=["EL", "NO", "VASS"],
 )
 
-plot_area_type = st.radio(
+plot_area_number = st.radio(
     "Select area number",
     options=["0", "1", "2", "3", "4", "5"],
 )
