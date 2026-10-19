@@ -22,9 +22,16 @@ columns_to_plot = [
     "Change FR",
 ]
 
-# Selecting data from specific area type and number.
-plot_area_type = "EL"
-plot_area_number = 1
+# Taking user input to decide which area type is to be plotted.
+plot_area_type = st.radio(
+    "Select area type",
+    options=["EL", "NO", "VASS"],
+)
+
+plot_area_type = st.radio(
+    "Select area number",
+    options=["0", "1", "2", "3", "4", "5"],
+)
 
 # Selecting data from df matching specified area type and number.
 # Plotting all data in chart will lead to overlapping dates, as
@@ -32,7 +39,7 @@ plot_area_number = 1
 plot_data = df[
     (df["Area Type"] == plot_area_type)
     & (df["Area Number"] == plot_area_number)
-][["Date", *columns_to_plot]].set_index("Date")
+    ][["Date", *columns_to_plot]].set_index("Date")
 
 
 
