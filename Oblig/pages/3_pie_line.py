@@ -129,8 +129,23 @@ with right_column:
 
 with st.expander("About this data"):
     st.write(
-        "The charts use ENTSO-E flow data stored in the project's MongoDB Atlas "
-        "database. The pie chart sums flow by Norwegian zone for the selected "
-        "year. The line chart shows incoming and outgoing flow between NO_4 and "
-        "SE_1 for the selected months in the most recent year of available data."
-    )
+        """
+        The charts use ENTSO-E flow data stored in the project's MongoDB Atlas          
+        database. The pie chart sums flow by Norwegian zone for the selected
+        year. The line chart shows incoming and outgoing flow between NO_4 and
+        SE_1 for the selected months in the most recent year of available data.
+
+        This page does not function exactly as the author guesses was Liland's
+        intention. The author guesses that page 3 was supposed to plot a pie
+        chart and a line chart based on user-inputted time period(s) and
+        user-inputted BRZ connections. This functionality is not compatible
+        with the current implementation, where the pie chart in both Streamlit
+        and the Jupyter Notebook plots cross-national-border in/out flows per
+        Norwegian BRZ in relation to each other, and not cross-national
+        connections in relation to each other. Because the plots rely on data
+        from the ENTSO-E API, and extracting this data has proved cumbersome
+        due to the Spark-Python version bug, the author deems a rework
+        unfeasable at this stage of the project (looking forward to some
+        feedback on this :D ).
+        """
+        )
