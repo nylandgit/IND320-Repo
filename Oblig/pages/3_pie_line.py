@@ -1,24 +1,22 @@
-import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
-
 from modules.mongoDBconnection import load_flow_data
 
 st.title("Pie and Line Charts")
 
-# Calling function from mongoDBconnection.py module.
 df = load_flow_data()
 
 # Converting API data columns to pandas datetime and numberic objects.
 df["timestamp"] = pd.to_datetime(df["timestamp"], utc=True)
 df["flow_mw"] = pd.to_numeric(df["flow_mw"])
 
+left_column, right_column = st.columns(2)
+
 # Splitting page into left and right columns.
 left_column, right_column = st.columns(2)
 
 
-
-# --- Left Column ---
+# --- Left column ---
 
 with left_column:
     st.subheader("Flow by Norwegian zone")
@@ -28,46 +26,47 @@ with left_column:
         "Connection (coming soon)",
         options=["Connection A", "Connection B"],
         disabled=True,
-        help="Connection filtering will be added later.",)
+        help="Connection filtering will be added later.")
 
-    years = [2025, 2026]
-        
     # Creating selection box to take user input for year.
-    selected_year = st.selectbox("Select year", options=years)
-
-    # Selecting data based on user-inputted year.
+    selected_year = st.selectbox("Select year", options=[2025, 2026])
     year_data = df[df["timestamp"].dt.year == selected_year]
-    
-    # Selecting zones.
+
+    # Selecting zones as in Jupyter Notebook.
     zones = ["NO_1", "NO_2", "NO_3", "NO_4"]
-    zone_totals = (
+    
+    # Selecting data based on zones and user-inputted year.
+    pie_data = (
         year_data.groupby("norway_zone")["flow_mw"]
         .sum()
         .reindex(zones, fill_value=0)
+        .rename_axis("Zone")
+        .reset_index(name="Flow (MW)"))
+
+    # Plotting using built-in Streamlit functions.
+    st.vega_lite_chart(
+        pie_data,
+        {
+            "mark": {"type": "arc", "outerRadius": 120},
+            "encoding": {
+                "theta": {"field": "Flow (MW)", "type": "quantitative"},
+                "color": {"field": "Zone", "type": "nominal"},
+                "tooltip": [
+                    {"field": "Zone", "type": "nominal"},
+                    {"field": "Flow (MW)", "type": "quantitative"},
+                ],
+            },
+        },
+        use_container_width=True,
     )
 
-    # Plotting.
-    fig, ax = plt.subplots(figsize=(6, 6))
-    ax.pie(
-        zone_totals,
-        labels=zone_totals.index,
-        autopct="%1.1f%%",
-        startangle=90,
-    )
-    ax.set_title(f"Flow in and out by Norwegian zone — {selected_year}")
-    ax.axis("equal")
 
-    st.pyplot(fig)
-    plt.close(fig)
-
-
-
-# --- Right Column ---
+# --- Right column ---
 
 with right_column:
     st.subheader("Flow between NO_4 and SE_1")
 
-    # Limit the data to the most recent year, then select the connection.
+    # Keep the most recent year of data for the connection used in the notebook.
     latest_timestamp = df["timestamp"].max()
     one_year_ago = latest_timestamp - pd.DateOffset(years=1)
 
@@ -77,49 +76,58 @@ with right_column:
         & (df["neighbor_zone"] == "SE_1")
     ].sort_values("timestamp")
 
-    # Create readable month labels, with the latest month first.
-    months = (
-        line_data["timestamp"]
-        .dt.strftime("%b %Y")
-        .drop_duplicates()
-        .tolist()[::-1]
-    )
-
-    selected_months = st.pills(
-        "Select months",
-        options=months,
-        default=months,
-        selection_mode="multi",
-    )
-
-    if selected_months:
-        plot_data = line_data[
-            line_data["timestamp"].dt.strftime("%b %Y").isin(selected_months)
-        ]
-
-        fig, ax = plt.subplots(figsize=(8, 5))
-
-        for direction, label in [
-            ("out", "Out: NO_4 to SE_1"),
-            ("in", "In: SE_1 to NO_4"),
-        ]:
-            direction_data = plot_data[plot_data["direction"] == direction]
-            if not direction_data.empty:
-                ax.plot(
-                    direction_data["timestamp"],
-                    direction_data["flow_mw"],
-                    label=label,
-                )
-
-        ax.set_title("NO_4-SE_1 flow")
-        ax.set_xlabel("Date")
-        ax.set_ylabel("Flow (MW)")
-        ax.legend()
-        ax.grid(True)
-        fig.tight_layout()
-
-        st.pyplot(fig)
-        plt.close(fig)
+    if line_data.empty:
+        st.info("No data is available for this connection in the most recent year.")
     else:
-        st.info("Select one or more months to display the line chart.")
+        months = (
+            line_data["timestamp"]
+            .dt.strftime("%b %Y")
+            .drop_duplicates()
+            .tolist()[::-1]
+        )
 
+        selected_months = st.pills(
+            "Select months",
+            options=months,
+            default=months,
+            selection_mode="multi",
+        )
+
+        if selected_months:
+            plot_data = line_data[
+                line_data["timestamp"].dt.strftime("%b %Y").isin(selected_months)
+            ]
+
+            flow_by_direction = (
+                plot_data.pivot_table(
+                    index="timestamp",
+                    columns="direction",
+                    values="flow_mw",
+                    aggfunc="sum",
+                )
+                .rename(
+                    columns={
+                        "out": "Out: NO_4 to SE_1",
+                        "in": "In: SE_1 to NO_4",
+                    }
+                )
+                .sort_index()
+            )
+
+            st.line_chart(
+                flow_by_direction,
+                x_label="Date",
+                y_label="Flow (MW)",
+            )
+        else:
+            st.info("Select one or more months to display the line chart.")
+
+# --- Source information ---
+
+with st.expander("About this data"):
+    st.write(
+        "The charts use ENTSO-E flow data stored in the project's MongoDB Atlas "
+        "database. The pie chart sums flow by Norwegian zone for the selected "
+        "year. The line chart shows incoming and outgoing flow between NO_4 and "
+        "SE_1 for the selected months in the most recent year of available data."
+    )
