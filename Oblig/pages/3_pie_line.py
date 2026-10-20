@@ -61,7 +61,11 @@ with left_column:
             "mark": {"type": "arc", "outerRadius": 120},
             "encoding": {
                 "theta": {"field": "Flow (MW)", "type": "quantitative"},
-                "color": {"field": "Direction", "type": "nominal"},
+                "color": {
+                    "field": "Direction",
+                    "type": "nominal",
+                    "legend": {"orient": "bottom", "direction": "horizontal"},
+                },
                 "tooltip": [
                     {"field": "Direction", "type": "nominal"},
                     {"field": "Flow (MW)", "type": "quantitative"},
@@ -83,7 +87,6 @@ with right_column:
     one_year_ago = latest_timestamp - pd.DateOffset(years=1)
 
     # Selecting data for plotting based on time period and connection.
-    # See log for information.
     line_data = df[
         (df["timestamp"] >= one_year_ago)
         & (df["norway_zone"] == "NO_4")
@@ -146,18 +149,5 @@ with st.expander("About this data"):
         database. The pie chart sums flow by Norwegian zone for the selected
         year. The line chart shows incoming and outgoing flow between NO_4 and
         SE_1 for the selected months in the most recent year of available data.
-
-        This page does not function exactly as the author guesses was Liland's
-        intention. The author guesses that page 3 was supposed to plot a pie
-        chart and a line chart based on user-inputted time period(s) and
-        user-inputted BRZ connections. This functionality is not compatible
-        with the current implementation, where the pie chart in both Streamlit
-        and the Jupyter Notebook plots cross-national-border in/out flows per
-        Norwegian BRZ in relation to each other, and not cross-national
-        connections in relation to each other. Because the plots rely on data
-        from the ENTSO-E API, and extracting this data has proved cumbersome
-        due to the Spark-Python version bug, the author deems a rework
-        unfeasable at this stage of the project (looking forward to some
-        feedback on this :D ).
         """
         )
