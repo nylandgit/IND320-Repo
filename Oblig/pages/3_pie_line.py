@@ -13,27 +13,34 @@ df["flow_mw"] = pd.to_numeric(df["flow_mw"])
 # Splitting page into left and right columns.
 left_column, right_column = st.columns(2)
 
+# Creating dictionary of paired zones from ENTSO-E map.
+brz_pairings = {
+    "NO_1": ["SE_3"],
+    "NO_2": ["DK_1", "GB", "DE_LU", "NL"],
+    "NO_3": ["SE_2"],
+    "NO_4": ["SE_1", "SE_2", "FI", "RU"],
+}
 
 
 # --- LEFT COLUMN ---
 
 with left_column:
-    st.subheader("Flow in and out on the NO_4–SE_1 connection")
 
-    # Creating placeholder radio buttons (see log).
-    st.radio(
-        "Connection (coming soon)",
-        options=["Connection A", "Connection B"],
-        disabled=True,
-        help="Connection filtering will be added later.")
+    # Pulling connections out of the brz_pairings dictionary.
+    connections = [
+        f"{norway_zone} ↔ {neighbor_zone}"
+        for norway_zone, neighbor_zones in brz_pairings.items()
+        for neighbor_zone in neighbor_zones]
+
+    # Creating radio buttons to let user select plotting connection.
+    selected_connection = st.radio("Select connection", options=connections)
+    zones = selected_connection.split(" ↔ ")
+    st.subheader(f"Flow in and out on the {zones[0]}–{zones[1]} connection")
 
     # Creating selection box to take user input for year.
     selected_year = st.selectbox("Select year", options=[2025, 2026])
     year_data = df[df["timestamp"].dt.year == selected_year]
 
-    # Selecting zones as in Jupyter Notebook.
-    zones = ["NO_4", "SE_1"]
-    
     # Selecting data based on zones and user-inputted year.
     year_data = year_data[
         (year_data["norway_zone"] == zones[0])
@@ -45,7 +52,7 @@ with left_column:
         .reindex(["in", "out"], fill_value=0)
         .rename_axis("Direction")
         .reset_index(name="Flow (MW)")
-        .replace({"Direction": {"in": "In: SE_1 to NO_4", "out": "Out: NO_4 to SE_1"}}))
+        .replace({"Direction": {"in": f"In: {zones[1]} to {zones[0]}", "out": f"Out: {zones[0]} to {zones[1]}"}}))
 
     # Plotting using built-in Streamlit functions.
     st.vega_lite_chart(
