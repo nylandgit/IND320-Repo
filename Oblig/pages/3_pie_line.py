@@ -23,8 +23,8 @@ left_column, right_column = st.columns(2)
 with left_column:
     st.subheader("Flow by Norwegian zone")
 
-    # years = [2025, 2026]
-    years = [sorted(df["timestamp"].dt.year.dropna().unique(), reverse=True)]
+    years = [2025, 2026]
+    #years = [sorted(df["timestamp"].dt.year.dropna().unique(), reverse=True)]
     
     # Creating selection box to take user input for year.
     selected_year = st.selectbox("Select year", options=years)
