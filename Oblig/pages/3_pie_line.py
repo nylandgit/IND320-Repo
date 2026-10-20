@@ -80,7 +80,7 @@ with left_column:
 # --- RIGHT COLUMN ---
 
 with right_column:
-    st.subheader("Flow between NO_4 and SE_1")
+    st.subheader(f"Flow between {zones[0]} and {zones[1]}")
 
     # Defining time period for data (last year).
     latest_timestamp = df["timestamp"].max()
@@ -89,8 +89,8 @@ with right_column:
     # Selecting data for plotting based on time period and connection.
     line_data = df[
         (df["timestamp"] >= one_year_ago)
-        & (df["norway_zone"] == "NO_4")
-        & (df["neighbor_zone"] == "SE_1")
+        & (df["norway_zone"] == zones[0])
+        & (df["neighbor_zone"] == zones[1])
     ].sort_values("timestamp")
 
     # Defining months the user can select.
@@ -125,8 +125,8 @@ with right_column:
                 )
                 .rename(
                     columns={
-                        "out": "Out: NO_4 to SE_1",
-                        "in": "In: SE_1 to NO_4",
+                        "out": f"Out: {zones[0]} to {zones[1]}",
+                        "in": f"In: {zones[1]} to {zones[0]}",
                     }
                 )
                 .sort_index())
