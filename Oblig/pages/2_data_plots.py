@@ -1,4 +1,4 @@
-from modules.db import load_data
+from modules.api import load_data
 import pandas as pd
 import streamlit as st
 
@@ -22,9 +22,23 @@ columns_to_plot = [
     "Change FR",
 ]
 
-# Selecting data from specific area type and number.
-plot_area_type = "EL"
-plot_area_number = 1
+# Taking user input to decide which area type is to be plotted.
+plot_area_type = st.radio(
+    "Select area type",
+    options=["EL", "NO", "VASS"])
+
+# Selecting offered area numbers based on user input for area type.
+if plot_area_type == "EL":
+    area_number_options = list(range(1, 6))
+elif plot_area_type == "NO":
+    area_number_options = [0]
+else:
+    area_number_options = list(range(1, 4))
+
+# Taking user input to decide which area number is to be plotted.
+plot_area_number = st.selectbox(
+    "Select area number",
+    options=area_number_options)
 
 # Selecting data from df matching specified area type and number.
 # Plotting all data in chart will lead to overlapping dates, as
@@ -32,7 +46,7 @@ plot_area_number = 1
 plot_data = df[
     (df["Area Type"] == plot_area_type)
     & (df["Area Number"] == plot_area_number)
-][["Date", *columns_to_plot]].set_index("Date")
+    ][["Date", *columns_to_plot]].set_index("Date")
 
 
 
