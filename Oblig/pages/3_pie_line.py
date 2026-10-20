@@ -10,13 +10,12 @@ df = load_flow_data()
 df["timestamp"] = pd.to_datetime(df["timestamp"], utc=True)
 df["flow_mw"] = pd.to_numeric(df["flow_mw"])
 
-left_column, right_column = st.columns(2)
-
 # Splitting page into left and right columns.
 left_column, right_column = st.columns(2)
 
 
-# --- Left column ---
+
+# --- LEFT COLUMN ---
 
 with left_column:
     st.subheader("Flow by Norwegian zone")
@@ -61,21 +60,25 @@ with left_column:
     )
 
 
-# --- Right column ---
+
+# --- RIGHT COLUMN ---
 
 with right_column:
     st.subheader("Flow between NO_4 and SE_1")
 
-    # Keep the most recent year of data for the connection used in the notebook.
+    # Defining time period for data (last year).
     latest_timestamp = df["timestamp"].max()
     one_year_ago = latest_timestamp - pd.DateOffset(years=1)
 
+    # Selecting data for plotting based on time period and connection.
+    # See log for information.
     line_data = df[
         (df["timestamp"] >= one_year_ago)
         & (df["norway_zone"] == "NO_4")
         & (df["neighbor_zone"] == "SE_1")
     ].sort_values("timestamp")
 
+    # Defining months the user can select.
     if line_data.empty:
         st.info("No data is available for this connection in the most recent year.")
     else:
@@ -83,21 +86,21 @@ with right_column:
             line_data["timestamp"]
             .dt.strftime("%b %Y")
             .drop_duplicates()
-            .tolist()[::-1]
-        )
+            .tolist()[::-1])
 
+        # Creating pills for selecting months. Default is most recent.
         selected_months = st.pills(
             "Select months",
             options=months,
-            default=months,
-            selection_mode="multi",
-        )
+            default=months[0],
+            selection_mode="multi",)
 
+        # Formatting each month as label shown in Streamlit.
         if selected_months:
             plot_data = line_data[
-                line_data["timestamp"].dt.strftime("%b %Y").isin(selected_months)
-            ]
+                line_data["timestamp"].dt.strftime("%b %Y").isin(selected_months)]
 
+            # Plotting.
             flow_by_direction = (
                 plot_data.pivot_table(
                     index="timestamp",
@@ -111,16 +114,16 @@ with right_column:
                         "in": "In: SE_1 to NO_4",
                     }
                 )
-                .sort_index()
-            )
+                .sort_index())
 
             st.line_chart(
                 flow_by_direction,
                 x_label="Date",
-                y_label="Flow (MW)",
-            )
+                y_label="Flow (MW)",)
         else:
             st.info("Select one or more months to display the line chart.")
+
+
 
 # --- Source information ---
 
