@@ -18,7 +18,7 @@ left_column, right_column = st.columns(2)
 # --- LEFT COLUMN ---
 
 with left_column:
-    st.subheader("Flow by Norwegian zone")
+    st.subheader("Flow in and out on the NO_4–SE_1 connection")
 
     # Creating placeholder radio buttons (see log).
     st.radio(
@@ -32,15 +32,20 @@ with left_column:
     year_data = df[df["timestamp"].dt.year == selected_year]
 
     # Selecting zones as in Jupyter Notebook.
-    zones = ["NO_1", "NO_2", "NO_3", "NO_4"]
+    zones = ["NO_4", "SE_1"]
     
     # Selecting data based on zones and user-inputted year.
+    year_data = year_data[
+        (year_data["norway_zone"] == zones[0])
+        & (year_data["neighbor_zone"] == zones[1])]
+    
     pie_data = (
-        year_data.groupby("norway_zone")["flow_mw"]
+        year_data.groupby("direction")["flow_mw"]
         .sum()
-        .reindex(zones, fill_value=0)
-        .rename_axis("Zone")
-        .reset_index(name="Flow (MW)"))
+        .reindex(["in", "out"], fill_value=0)
+        .rename_axis("Direction")
+        .reset_index(name="Flow (MW)")
+        .replace({"Direction": {"in": "In: SE_1 to NO_4", "out": "Out: NO_4 to SE_1"}}))
 
     # Plotting using built-in Streamlit functions.
     st.vega_lite_chart(
@@ -49,9 +54,9 @@ with left_column:
             "mark": {"type": "arc", "outerRadius": 120},
             "encoding": {
                 "theta": {"field": "Flow (MW)", "type": "quantitative"},
-                "color": {"field": "Zone", "type": "nominal"},
+                "color": {"field": "Direction", "type": "nominal"},
                 "tooltip": [
-                    {"field": "Zone", "type": "nominal"},
+                    {"field": "Direction", "type": "nominal"},
                     {"field": "Flow (MW)", "type": "quantitative"},
                 ],
             },
