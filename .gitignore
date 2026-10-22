@@ -4,5 +4,4 @@ Oblig/.venv/
 Oblig/No Sync/
 .venv/
 Hadoop/
-Oblig/.venv-py314
-Oblig/.venv-broken
+Oblig\.streamlit
