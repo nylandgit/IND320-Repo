@@ -1,4 +1,3 @@
-from pathlib import Path
 import pandas as pd
 import streamlit as st
 from pymongo import MongoClient
@@ -11,12 +10,7 @@ from pymongo.server_api import ServerApi
 # Defining function to load MongoDB data into pandas df.
 def load_flow_data() -> pd.DataFrame:
     
-    # Using Path to set path relative to module directory. Default is
-    # Streamlit working directory, which is not necessarily reliable.
-    psw_file = (
-        Path(__file__).resolve().parents[1] / "No Sync" / "MongoDB.txt")
-    
-    psw = psw_file.read_text(encoding="utf-8").strip()
+    psw = st.secrets["psw"]
 
     uri = ("mongodb+srv://ipynb_user:"+psw+ "@nylandcluster.zizrxuq.mongodb.net/")
 
@@ -26,4 +20,3 @@ def load_flow_data() -> pd.DataFrame:
         documents = list(collection.find({}, {"_id": 0}))
 
     return pd.DataFrame.from_records(documents)
-
