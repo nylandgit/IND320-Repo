@@ -9,3 +9,4 @@ Oblig/template files
 Oblig/Innleveringsfiler
 Oblig/modules/__pycache__
 Oblig/notebooks/open_meteo_cache
+Oblig/notebooks/.cache.sqlite
