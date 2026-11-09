@@ -12,3 +12,4 @@ Oblig/notebooks/open_meteo_cache
 Oblig/notebooks/.cache.sqlite
 Oblig/notebooks/kladd.py
 Oblig/modules/download_era5_region.py
+Oblig/notebooks/__pycache__
