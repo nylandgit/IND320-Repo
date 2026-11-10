@@ -44,8 +44,6 @@ with left_column:
 
 with right_column:
 
-    st.write("Spectrogram")
-
     if "selected_data" not in st.session_state:
         st.info("Select data on the Data Plots page first.")
     else:
