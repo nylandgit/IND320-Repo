@@ -59,4 +59,3 @@ with right_column:
                 st.session_state["plot_area_type"],
                 st.session_state["plot_area_number"],
             )
-
