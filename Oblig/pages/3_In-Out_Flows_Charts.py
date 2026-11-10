@@ -2,7 +2,7 @@ import pandas as pd
 import streamlit as st
 from modules.mongoDBconnection import load_flow_data
 
-st.title("Pie and Line Charts")
+st.title("In/Out Flows")
 
 df = load_flow_data()
 

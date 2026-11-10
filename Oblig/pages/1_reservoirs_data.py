@@ -6,7 +6,7 @@ import streamlit as st
 df = load_data()
 
 # Creating page title and API load information.
-st.title("Reservoir data")
+st.title("Brief Overview of Reservoirs Data")
 st.write(f"Loaded {len(df):,} rows.")
 
 
