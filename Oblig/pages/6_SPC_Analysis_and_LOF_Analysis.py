@@ -1,4 +1,3 @@
-from Oblig.modules.api_mag import load_data
 import pandas as pd
 import streamlit as st
 
