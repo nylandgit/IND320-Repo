@@ -1,7 +1,19 @@
-Pensum/
-Diverse Kode/
-Oblig/.venv/
-Oblig/No Sync/
 .venv/
+Diverse Kode/
 Hadoop/
 Oblig/.streamlit/secrets.toml
+Oblig/.venv/
+Oblig/data/meteorological
+Oblig/Innleveringsfiler
+Oblig/modules/__pycache__
+Oblig/modules/__init__.py
+Oblig/modules/download_era5_region.py
+Oblig/No Sync/
+Oblig/notebooks/.cache.sqlite
+Oblig/notebooks/__pycache__
+Oblig/notebooks/crossborder_flows_backup.pkl
+Oblig/notebooks/kladd.py
+Oblig/notebooks/NO_3_2024-01-01_2024-12-31.csv
+Oblig/notebooks/open_meteo_cache
+Oblig/template files
+Pensum/

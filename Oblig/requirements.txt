@@ -2,3 +2,9 @@ streamlit
 pandas
 numpy
 matplotlib
+openmeteo-requests
+requests-cache
+retry-requests
+geopandas
+scipy
+scikit-learn

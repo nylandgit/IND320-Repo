@@ -1,4 +1,4 @@
-from modules.api import load_data
+from modules.api_mag import load_data
 import pandas as pd
 import streamlit as st
 
@@ -66,9 +66,13 @@ available_months = plot_data.index.to_period("M").unique().tolist()
 start_month, end_month = st.select_slider(
     "Select months",
     options=available_months,
-    value=(available_months[0], available_months[0]),
+    value=(available_months[0], available_months[-1]),
     format_func=str,
 )
+
+# Saving selection to session state for later use on other pages.
+st.session_state["selected_start_month"] = str(start_month)
+st.session_state["selected_end_month"] = str(end_month)
 
 # Creating pandas object for plotting monthly data in figures. Some
 # months in the CSV have more observations than others.
@@ -93,6 +97,17 @@ selected_column = st.selectbox(
 # "All columns".
 selected_columns = (
     columns_to_plot if selected_column == "All columns" else [selected_column]
+)
+
+stl_data = selected_data.reset_index()
+stl_data["Area Type"] = plot_area_type
+stl_data["Area Number"] = plot_area_number
+
+st.session_state["selected_data"] = stl_data
+st.session_state["plot_area_type"] = plot_area_type
+st.session_state["plot_area_number"] = plot_area_number
+st.session_state["selected_column"] = (
+    selected_column if selected_column != "All columns" else "Filling Ratio"
 )
 
 
