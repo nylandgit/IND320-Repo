@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import streamlit as st
 from statsmodels.tsa.seasonal import STL
 
@@ -39,13 +40,13 @@ def plot_stl_decomposition(
     # Plotting.
     components = pd.DataFrame(
         {
-            "Observed": data[selected_column].to_numpy(),
-            "Trend": result.trend,
-            "Seasonal": result.seasonal,
-            "Residual": result.resid,
-        },
-        index=pd.DatetimeIndex(data["Date"], name="Date"),
-    )
+            "Date": data["Date"].to_numpy(),
+            "Observed": np.asarray(data[selected_column]),
+            "Trend": np.asarray(result.trend),
+            "Seasonal": np.asarray(result.seasonal),
+            "Residual": np.asarray(result.resid),
+        })
+
     labels = ["Observed", "Trend", "Seasonal", "Residual"]
 
     st.subheader(
@@ -56,6 +57,7 @@ def plot_stl_decomposition(
     for label in labels:
         st.line_chart(
             components,
+            x="Date",
             y=label,
             x_label="Date",
             y_label=label,
