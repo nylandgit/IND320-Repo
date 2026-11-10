@@ -26,8 +26,8 @@ with left_column:
         selected_data = st.session_state["selected_data"]
         selected_column = st.session_state["selected_column"]
 
-        if selected_data[selected_column].dropna().shape[0] < 104:
-            st.warning("Select at least 104 weekly observations for STL analysis.")
+        #if selected_data[selected_column].dropna().shape[0] < 104:
+        #    st.warning("Select at least 104 weekly observations for STL analysis.")
         else:
             plot_stl_decomposition(
                 selected_data,
