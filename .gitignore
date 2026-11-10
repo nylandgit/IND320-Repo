@@ -5,6 +5,7 @@ Oblig/.streamlit/secrets.toml
 Oblig/.venv/
 Oblig/Innleveringsfiler
 Oblig/modules/__pycache__
+Oblig/modules/__init__.py
 Oblig/modules/download_era5_region.py
 Oblig/No Sync/
 Oblig/notebooks/.cache.sqlite

@@ -70,6 +70,10 @@ start_month, end_month = st.select_slider(
     format_func=str,
 )
 
+# Saving selection to session state for later use on other pages.
+st.session_state["selected_start_month"] = str(start_month)
+st.session_state["selected_end_month"] = str(end_month)
+
 # Creating pandas object for plotting monthly data in figures. Some
 # months in the CSV have more observations than others.
 plot_months = plot_data.index.to_period("M")
