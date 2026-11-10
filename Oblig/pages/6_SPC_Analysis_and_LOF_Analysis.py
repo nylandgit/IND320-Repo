@@ -1,11 +1,8 @@
 import pandas as pd
 import streamlit as st
 
-# Loading csv into df.
-df = load_data()
-
 # Creating page title and csv load information.
-st.title("WIP Seasonal-Trend Decomposition using LOESS and Spectrogram")
+st.title("WIP SPC Analysis and LOF Anomaly Detection")
 #st.write(f"Select data type and range to plot.")
 
 
