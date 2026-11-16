@@ -169,7 +169,7 @@ def download_region(
             progress_callback(f"Completed chunk {chunk_number}/{total_chunks}.")
 
         # Pausing between chunks to stay under the API's per-minute limit.
-        time.sleep(5)
+        time.sleep(10)
 
     # Saving everything to csv so the API call only needs to be done once.
     region_data = pd.concat(region_data, ignore_index=True)
