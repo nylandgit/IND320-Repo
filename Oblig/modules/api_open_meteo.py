@@ -28,11 +28,12 @@ def download_region(
     region_data = []
     
     locations = locations_by_region_el[region]
+    points = pd.DataFrame(locations, columns=["lat", "lon"])
 
+    """
     # Getting the elevation of every sampled point from Open-Meteo's Elevation
     # API (max 100 coordinates per request), see code block below. Iterating
     # over sampled points in batches of 100.
-    points = pd.DataFrame(locations, columns=["lat", "lon"])
     elevations = []
     for batch_start in range(0, len(points), 100):
         batch = points.iloc[batch_start:batch_start + 100]
@@ -55,6 +56,7 @@ def download_region(
         elev_response.raise_for_status()
         elevations += elev_response.json()["elevation"]
     points["elevation"] = elevations
+    """
 
     # Merging sampled points into ERA5 grid cells (0.25 degrees). Each cell is
     # requested once, at the mean position and mean elevation of the sampled
@@ -68,7 +70,7 @@ def download_region(
     cells = points.groupby(["cell_lat", "cell_lon"]).agg(
         lat=("lat", "mean"),
         lon=("lon", "mean"),
-        elevation=("elevation", "mean"),
+        #elevation=("elevation", "mean"),
         weight=("lat", "size"),
     ).reset_index()
 
@@ -92,7 +94,7 @@ def download_region(
         params = {
             "latitude": chunk["lat"].tolist(),
             "longitude": chunk["lon"].tolist(),
-            "elevation": chunk["elevation"].tolist(),
+            #"elevation": chunk["elevation"].tolist(),
             "start_date": start_date,
             "end_date": end_date,
             "hourly": ["temperature_2m", "precipitation"],
@@ -138,7 +140,7 @@ def download_region(
             point_data = pd.DataFrame(data=hourly_data)
             point_data["latitude"] = cell["lat"]
             point_data["longitude"] = cell["lon"]
-            point_data["elevation"] = cell["elevation"]
+            #point_data["elevation"] = cell["elevation"]
             point_data["weight"] = int(cell["weight"])
             region_data.append(point_data)
 
