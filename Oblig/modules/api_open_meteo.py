@@ -81,7 +81,7 @@ def download_region(
         )
 
     # Setting up chunk-based API data requesting (lots of data).
-    chunk_size = 25
+    chunk_size = 100
     total_chunks = (len(cells) + chunk_size - 1) // chunk_size
 
     # Iterating over each chunk.
