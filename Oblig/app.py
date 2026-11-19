@@ -1,11 +1,60 @@
 import streamlit as st
 
+st.set_page_config(page_title="IND320 Energy Data Explorer", page_icon="⚡")
+
+
 def home():
-    st.title("Welcome to Placeholder App")
-    st.text("""
-        Use sidebar menu to browse pages. See GitHub README located at
-        https://github.com/nylandgit/IND320-Repo for further information.
-    """)
+    st.title("IND320 Energy Data Explorer")
+    st.write(
+        "Explore Norwegian reservoir statistics, cross-border electricity flows, "
+        "meteorological data, and time-series analysis."
+    )
+
+    st.subheader("Quick start")
+    st.markdown(
+        """
+        1. Open **Magasinstatistikk Data Selector and Plots**.
+        2. Choose an **area type**, **area number**, **month range**, and **column**.
+        3. Open **Meteorological Data Retrieval** and retrieve data for the selected range.
+        4. Explore the analyses in **STL Analysis and Spectrogram** and
+           **Meteorological Analysis**.
+        """
+    )
+
+    st.subheader("Page guide")
+
+    with st.expander("Magasinstatistikk Data Selector and Plots"):
+        st.write(
+            "WIP."
+        )
+
+    with st.expander("In-Out Flows Charts"):
+        st.write(
+            "WIP."
+        )
+
+    with st.expander("Meteorological Data Retrieval"):
+        st.write(
+            "WIP."
+        )
+
+    with st.expander("STL Analysis and Spectrogram"):
+        st.write(
+            "WIP."
+        )
+
+    with st.expander("Meteorological Analysis"):
+        st.write(
+            "WIP."
+        )
+
+    st.subheader("Navigation tip")
+    st.info("Use the sidebar to move between pages. Selections are kept while the app is running.")
+
+    st.caption(
+        "Technical details and project information are available in the "
+        "[GitHub README](https://github.com/nylandgit/IND320-Repo)."
+    )
 
 pages = [
     st.Page(home, title="Home"),
@@ -19,5 +68,3 @@ pages = [
 
 page = st.navigation(pages)
 page.run()
-
-st.set_page_config(page_title="Home",)
