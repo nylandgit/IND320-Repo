@@ -5,6 +5,12 @@ st.set_page_config(page_title="IND320 Energy Data Explorer", page_icon="⚡")
 
 def home():
     st.title("IND320 Energy Data Explorer")
+
+    st.caption(
+            "Technical details and project information are available in the "
+            "[GitHub README](https://github.com/nylandgit/IND320-Repo)."
+        )
+    
     st.write(
         "Explore Norwegian reservoir statistics, cross-border electricity flows, "
         "meteorological data, and time-series analysis."
@@ -50,11 +56,6 @@ def home():
 
     st.subheader("Navigation tip")
     st.info("Use the sidebar to move between pages. Selections are kept while the app is running.")
-
-    st.caption(
-        "Technical details and project information are available in the "
-        "[GitHub README](https://github.com/nylandgit/IND320-Repo)."
-    )
 
 pages = [
     st.Page(home, title="Home"),
