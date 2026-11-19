@@ -63,10 +63,31 @@ available_months = plot_data.index.to_period("M").unique().tolist()
 
 # Creating selection slider for selecting specific subsets of months,
 # using ready-made available_months list.
+default_start_month = pd.Period("2024-01", freq="M")
+default_end_month = pd.Period("2024-06", freq="M")
+
+if default_start_month not in available_months:
+    default_start_month = available_months[0]
+if default_end_month not in available_months:
+    default_end_month = available_months[-1]
+
+if "data_plots_month_range" not in st.session_state:
+    st.session_state["data_plots_month_range"] = (
+        default_start_month,
+        default_end_month,
+    )
+
+saved_start_month, saved_end_month = st.session_state["data_plots_month_range"]
+if saved_start_month not in available_months:
+    saved_start_month = default_start_month
+if saved_end_month not in available_months:
+    saved_end_month = default_end_month
+
 start_month, end_month = st.select_slider(
     "Select months",
     options=available_months,
-    value=(available_months[0], available_months[-1]),
+    value=(saved_start_month, saved_end_month),
+    key="data_plots_month_range",
     format_func=str,
 )
 
