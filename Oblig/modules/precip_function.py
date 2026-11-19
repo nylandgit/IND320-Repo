@@ -1,45 +1,89 @@
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
-from sklearn.neighbors import LocalOutlierFactor
+from scipy.fft import dct, idct
 
-
-def precipitation_function(
+def precip_function(
     weather_data,
     region="NO 3",
-    outlier_proportion=0.01,
+    cutoff_f=None,
+    stdev_n=3,
+    cutoff_input=30,
 ):
+    # Taking the average hourly precipitation across all 1000 sampled points.
     precip_avg = (
         weather_data.groupby("date")["precipitation"].mean().sort_index()
     )
 
-    # Transforming precip_avg pd Series to numpy array for use in
-    # LocalOutlierFactor().
-    lof_data = precip_avg.to_numpy().reshape(-1, 1)
+    # Defining n = number of observations for avg precipitation.
+    precip_avg_np = precip_avg.to_numpy(dtype=float)
+    n = len(precip_avg_np)
+    if cutoff_f is None:
+        cutoff_f = np.arange(n) / (2 * n)
 
-    # Using LocalOutlierFactor() as instructed by D2D book.
-    lof = LocalOutlierFactor(contamination=outlier_proportion)
-    labels = lof.fit_predict(lof_data)
-    anomalies = labels == -1
+    # Defining cutoff period (24 hours/day) and frequency.
+    cutoff_period_hours = 24 * cutoff_input
 
-    # Plotting w/ anomalies, outlier details.
+    # Performing DCT. dct() transforms precipitation values from the time domain
+    # to DCT coefficients, which are then set to zero if their frequencies are
+    # below the cutoff frequency. This effectively removes fluctuations with
+    # periods longer than the cutoff.
+    coefficients = dct(precip_avg_np, type=1, norm="ortho")
+    coefficients[cutoff_f < 1 / cutoff_period_hours] = 0
+
+    # Creating a pandas Series of the remaining coefficients, after converting
+    # these back into the time domain using idct(). Voila! High-pass filtering :D
+    high_pass_precip = pd.Series(
+        idct(coefficients, type=2, norm="ortho"),
+        index=precip_avg.index,
+        name="SATV",
+    )
+
+    # Assuming normal distribution and defining outlier limit to be +-3 STD as
+    # explained by the D2D book.
+    satv_median = high_pass_precip.median()
+    robust_sigma = 1.4826 * (high_pass_precip - satv_median).abs().median()
+    satv_lcl = satv_median - stdev_n * robust_sigma
+    satv_ucl = satv_median + stdev_n * robust_sigma
+
+    # Identifying outliers from SATV.
+    outliers = (high_pass_precip < satv_lcl) | (high_pass_precip > satv_ucl)
+
+    # Translating outliers back into precipitation.
+    baseline = precip_avg - high_pass_precip
+    lcl = baseline + satv_lcl
+    ucl = baseline + satv_ucl
+
+    # Plotting avg precipitation and its SATV-based control limits.
     fig, ax = plt.subplots(figsize=(12, 5))
+    ax.plot(precip_avg.index, precip_avg.values, label="Average precipitation")
     ax.plot(
         precip_avg.index,
-        precip_avg.values,
-        label="Average precipitation",
+        lcl,
+        color="orange",
+        linestyle="--",
+        label="Lower control limit",
+    )
+    ax.plot(
+        precip_avg.index,
+        ucl,
+        color="orange",
+        linestyle="--",
+        label="Upper control limit",
     )
     ax.scatter(
-        precip_avg.index[anomalies],
-        precip_avg[anomalies],
-        color="red",
-        label="Anomalies",
+        high_pass_precip.index[outliers],
+        precip_avg.loc[outliers],
+        color="crimson",
+        label="SATV outliers",
+        zorder=3,
     )
 
     period = str(precip_avg.index[0].year)
     if precip_avg.index[0].year != precip_avg.index[-1].year:
         period = f"{precip_avg.index[0].year}-{precip_avg.index[-1].year}"
     ax.set(
-        title=f"Average precipitation over {region} ({period})",
+        title=f"SATV-based Statistical Process Control for {region} ({period})",
         xlabel="Time",
         ylabel="Average precipitation (mm/hour)",
     )
@@ -48,9 +92,12 @@ def precipitation_function(
     fig.tight_layout()
 
     outlier_details = pd.DataFrame(
-        {"average_precipitation": precip_avg[anomalies]}
+        {
+            "average_precipitation": precip_avg[outliers],
+            "SATV": high_pass_precip[outliers],
+        }
     )
-    outlier_summary = outlier_details.agg(
+    outlier_summary = outlier_details["average_precipitation"].agg(
         ["count", "mean", "min", "max"]
     )
 

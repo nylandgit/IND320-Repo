@@ -11,11 +11,11 @@ from modules.spectrogram_mag import plot_spectrogram
 st.title("WIP Seasonal-Trend Decomposition using LOESS and Spectrogram")
 
 # Splitting page into left and right columns.
-left_column, right_column = st.columns(2)
+left_tab, right_tab = st.tabs(["STL Analysis", "Spectrogram"])
 
 # --- Left Column
 
-with left_column:
+with left_tab:
 
     # Raising error if data not selected on Data Plots page.
     if "selected_data" not in st.session_state:
@@ -42,7 +42,7 @@ with left_column:
 
 # --- Right Column
 
-with right_column:
+with right_tab:
 
     if "selected_data" not in st.session_state:
         st.info("Select data on the Data Plots page first.")

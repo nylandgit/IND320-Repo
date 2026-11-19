@@ -3,10 +3,11 @@ import streamlit as st
 from modules.api_open_meteo import download_region
 from modules.sampling_areas_el import sample_areas_el
 
-st.title("WIP Meteorological Data")
+st.title("Meteorological Data Retrieval")
 st.write(
     """
-    Text explaining data selection from Data Plots.
+    Downloads meteorological data relevant for user-selected range of
+    Magasinstatistikk data.
     """)
 
 # Defining required user input for data retrieval to happen.
@@ -19,7 +20,7 @@ required_keys = (
 
 # Defining behaviour if not all required user input is present.
 if not all(key in st.session_state for key in required_keys):
-    st.info("Select an area and date range on the Data Plots page first.")
+    st.info("Select an area and date range on the Magasinstatistikk Data page first.")
     st.stop()
 
 # Temporary limitation of program, will fix later.
