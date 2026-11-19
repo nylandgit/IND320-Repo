@@ -26,28 +26,6 @@ def download_region(
 ):
     url = "https://archive-api.open-meteo.com/v1/archive"
     region_data = []
-
-    """
-    (This block is redundant)
-
-    # Loading saved csv if it exists, so the API only needs to be called once.
-        # The f"{...} line looks for files named using the naming logic seen in
-        # the last code block of this function.
-        csv_file = DATA_DIR / f"{region.replace(' ', '_')}_{start_date}_{end_date}.csv"
-        if csv_file.exists():
-            if progress_callback is not None:
-                progress_callback(
-                    f"Loading {csv_file.name} from disk, no API calls needed."
-                )
-            saved = pd.read_csv(csv_file)
-    
-            # Converting to date column data to datetime objects (if they exist).
-            saved["date"] = (
-                pd.to_datetime(saved["date"], utc=True)
-                .dt.tz_convert("Europe/Berlin")
-            )
-            return saved
-    """
     
     locations = locations_by_region_el[region]
 
