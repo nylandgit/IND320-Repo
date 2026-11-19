@@ -4,7 +4,7 @@
 
 This repo is used in academic work related to the course IND320 Data to Decision at NMBU. It is connected to the Streamlit app linked above, in which data from various sources is compiled and analysed as a means to guide executive decisionmaking.
 
-## Oblig/ folder houses relevant project files:
+## Oblig folder houses relevant project files:
 * /.streamlit: Folder necessary for Streamlit app.
 * /Innleveringsfiler: .html versions of .ipynb files in /notebooks.
 * /modules: .py modules for Streamlit app functionality.
@@ -20,6 +20,4 @@ This repo is used in academic work related to the course IND320 Data to Decision
 * MongoDB Atlas: Database used to store data, written to by project_work_part2.ipynb, retrieved by Streamlit app.
 
 ## App Pages (WIP):
-* Reservoirs Data: To be removed, ignore for now.
-* Magasinstatistikk Data Selector and Plots: Select desired time period for Magasinstatistikk. Used in later pages.
-* In-Out Flows Charts: 
+Per-page instructions will be implemented when the app design is finalized.
