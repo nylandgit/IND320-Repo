@@ -3,7 +3,13 @@ import numpy as np
 import pandas as pd
 from scipy.fft import dct, idct
 
-def precip_function(weather_data, region="NO 3", cutoff_f=None, stdev_n=3):
+def precip_function(
+    weather_data,
+    region="NO 3",
+    cutoff_f=None,
+    stdev_n=3,
+    cutoff_input=30,
+):
     # Taking the average hourly precipitation across all 1000 sampled points.
     precip_avg = (
         weather_data.groupby("date")["precipitation"].mean().sort_index()
@@ -15,8 +21,8 @@ def precip_function(weather_data, region="NO 3", cutoff_f=None, stdev_n=3):
     if cutoff_f is None:
         cutoff_f = np.arange(n) / (2 * n)
 
-    # Defining cutoff period (24 hours/day * 30 days) and frequency.
-    cutoff_period_hours = 24 * 30
+    # Defining cutoff period (24 hours/day) and frequency.
+    cutoff_period_hours = 24 * cutoff_input
 
     # Performing DCT. dct() transforms precipitation values from the time domain
     # to DCT coefficients, which are then set to zero if their frequencies are

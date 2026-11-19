@@ -24,9 +24,27 @@ left_tab, right_tab = st.tabs(["Precipitation SPC", "Temperature LOF"])
 
 with left_tab:
     st.subheader("Precipitation SPC Analysis")
+    with st.expander("Analysis settings"):
+        cutoff_input = st.slider(
+            "Cutoff period (days)",
+            min_value=7,
+            max_value=91,
+            value=30,
+            step=1,
+        )
+        stdev_n = st.slider(
+            "Standard deviations",
+            min_value=1.0,
+            max_value=4.0,
+            value=3.0,
+            step=0.25,
+            format="%.2f",
+        )
     fig, _, outlier_summary = precip_function(
         weather_data,
         region=region,
+        cutoff_input=cutoff_input,
+        stdev_n=stdev_n,
     )
     st.pyplot(fig)
     st.write(outlier_summary)
