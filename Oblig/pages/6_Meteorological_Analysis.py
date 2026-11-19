@@ -37,9 +37,19 @@ with left_tab:
 
 with right_tab:
     st.subheader("Temperature LOF Analysis")
+    with st.expander("Analysis settings"):
+        outlier_proportion = st.slider(
+            "Outlier proportion",
+            min_value=0.001,
+            max_value=0.100,
+            value=0.010,
+            step=0.001,
+            format="%.3f",
+        )
     fig, _, outlier_summary = temp_function(
         weather_data,
         region=region,
+        outlier_proportion=outlier_proportion,
     )
     st.pyplot(fig)
     st.write(outlier_summary)
