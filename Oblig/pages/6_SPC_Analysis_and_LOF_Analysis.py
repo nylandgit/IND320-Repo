@@ -1,5 +1,5 @@
 import streamlit as st
-from modules.precip_function import precipitation_function
+from modules.precip_function import precip_function
 from modules.temp_function import temp_function
 
 st.title("SPC Analysis and LOF Anomaly Detection")
@@ -16,15 +16,15 @@ region, start_date, end_date = st.session_state["meteorological_selection"]
 st.caption(f"Showing {region}, {start_date} to {end_date}")
 
 # Splitting page into columns as instructed.
-left_tab, right_tab = st.tabs(["Temperature SPC", "Precipitation LOF"])
+left_tab, right_tab = st.tabs(["Precipitation SPC", "Temperature LOF"])
 
 
 
 # --- Left Column
 
 with left_tab:
-    st.subheader("Temperature SPC Analysis")
-    fig, _, outlier_summary = temp_function(
+    st.subheader("Precipitation SPC Analysis")
+    fig, _, outlier_summary = precip_function(
         weather_data,
         region=region,
     )
@@ -36,8 +36,8 @@ with left_tab:
 # --- Right Column
 
 with right_tab:
-    st.subheader("Precipitation LOF Analysis")
-    fig, _, outlier_summary = precipitation_function(
+    st.subheader("Temperature LOF Analysis")
+    fig, _, outlier_summary = temp_function(
         weather_data,
         region=region,
     )
