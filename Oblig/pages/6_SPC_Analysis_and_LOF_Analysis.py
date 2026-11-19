@@ -16,13 +16,13 @@ region, start_date, end_date = st.session_state["meteorological_selection"]
 st.caption(f"Showing {region}, {start_date} to {end_date}")
 
 # Splitting page into columns as instructed.
-left_column, right_column = st.columns(2)
+left_tab, right_tab = st.tabs(["Temperature SPC", "Precipitation LOF"])
 
 
 
 # --- Left Column
 
-with left_column:
+with left_tab:
     st.subheader("Temperature SPC Analysis")
     fig, _, outlier_summary = temp_function(
         weather_data,
@@ -35,7 +35,7 @@ with left_column:
 
 # --- Right Column
 
-with right_column:
+with right_tab:
     st.subheader("Precipitation LOF Analysis")
     fig, _, outlier_summary = precipitation_function(
         weather_data,
