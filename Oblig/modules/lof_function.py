@@ -3,14 +3,18 @@ import pandas as pd
 from sklearn.neighbors import LocalOutlierFactor
 
 
-def temp_function(
+def lof_function(
     weather_data,
     region="NO 3",
     outlier_proportion=0.01,
+    weather_property="temperature",
 ):
-    temp_avg = (
-        weather_data.groupby("date")["temperature_2m"].mean().sort_index()
-    )
+    weather_columns = {
+        "temperature": ("temperature_2m", "temperature", "°C"),
+        "precipitation": ("precipitation", "precipitation", "mm/hour"),
+    }
+    column, property_label, unit = weather_columns[weather_property]
+    temp_avg = weather_data.groupby("date")[column].mean().sort_index()
 
     # Transforming temp_avg pd Series to numpy array for use in
     # LocalOutlierFactor().
@@ -26,7 +30,7 @@ def temp_function(
     ax.plot(
         temp_avg.index,
         temp_avg.values,
-        label="Average temperature",
+        label=f"Average {property_label}",
     )
     ax.scatter(
         temp_avg.index[anomalies],
@@ -39,16 +43,16 @@ def temp_function(
     if temp_avg.index[0].year != temp_avg.index[-1].year:
         period = f"{temp_avg.index[0].year}-{temp_avg.index[-1].year}"
     ax.set(
-        title=f"Average temperature over {region} ({period})",
+        title=f"Average {property_label} over {region} ({period})",
         xlabel="Time",
-        ylabel="Average temperature (°C)",
+        ylabel=f"Average {property_label} ({unit})",
     )
     ax.grid(True)
     ax.legend()
     fig.tight_layout()
 
     outlier_details = pd.DataFrame(
-        {"average_temperature": temp_avg[anomalies]}
+        {f"average_{property_label}": temp_avg[anomalies]}
     )
     outlier_summary = outlier_details.agg(
         ["count", "mean", "min", "max"]

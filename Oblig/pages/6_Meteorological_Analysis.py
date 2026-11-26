@@ -1,6 +1,6 @@
 import streamlit as st
 from modules.satv_function import SATV_function
-from modules.temp_function import temp_function
+from modules.lof_function import lof_function
 
 st.title("SPC Analysis and LOF Anomaly Detection")
 
@@ -16,7 +16,7 @@ region, start_date, end_date = st.session_state["meteorological_selection"]
 st.caption(f"Showing {region}, {start_date} to {end_date}")
 
 # Splitting page into columns as instructed.
-left_tab, right_tab = st.tabs(["SATV Analysis", "Temperature LOF"])
+left_tab, right_tab = st.tabs(["SATV Analysis", "LOF Analysis"])
 
 
 
@@ -29,6 +29,7 @@ with left_tab:
             "Weather property",
             options=["temperature", "precipitation"],
             index=0,
+            key="satv_weather_property",
         )
         cutoff_input = st.slider(
             "Cutoff period (days)",
@@ -60,8 +61,14 @@ with left_tab:
 # --- Right Column
 
 with right_tab:
-    st.subheader("Temperature LOF Analysis")
+    st.subheader("LOF Analysis")
     with st.expander("Analysis settings"):
+        weather_property = st.selectbox(
+            "Weather property",
+            options=["temperature", "precipitation"],
+            index=0,
+            key="lof_weather_property",
+        )
         outlier_proportion = st.slider(
             "Outlier proportion",
             min_value=0.001,
@@ -70,10 +77,11 @@ with right_tab:
             step=0.001,
             format="%.3f",
         )
-    fig, _, outlier_summary = temp_function(
+    fig, _, outlier_summary = lof_function(
         weather_data,
         region=region,
         outlier_proportion=outlier_proportion,
+        weather_property=weather_property,
     )
     st.pyplot(fig)
     st.write(outlier_summary)
