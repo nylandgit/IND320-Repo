@@ -3,19 +3,23 @@ import numpy as np
 import pandas as pd
 from scipy.fft import dct, idct
 
-def precip_function(
+def SATV_function(
     weather_data,
     region="NO 3",
     cutoff_f=None,
     stdev_n=3,
     cutoff_input=30,
+    weather_property="temperature",
 ):
-    # Taking the average hourly precipitation across all 1000 sampled points.
-    precip_avg = (
-        weather_data.groupby("date")["precipitation"].mean().sort_index()
-    )
+    weather_columns = {
+        "temperature": ("temperature_2m", "temperature", "°C"),
+        "precipitation": ("precipitation", "precipitation", "mm/hour"),
+    }
+    column, property_label, unit = weather_columns[weather_property]
+    # Taking the average hourly data across all 1000 sampled points.
+    precip_avg = weather_data.groupby("date")[column].mean().sort_index()
 
-    # Defining n = number of observations for avg precipitation.
+    # Defining n = number of observations for avg data.
     precip_avg_np = precip_avg.to_numpy(dtype=float)
     n = len(precip_avg_np)
     if cutoff_f is None:
@@ -24,7 +28,7 @@ def precip_function(
     # Defining cutoff period (24 hours/day) and frequency.
     cutoff_period_hours = 24 * cutoff_input
 
-    # Performing DCT. dct() transforms precipitation values from the time domain
+    # Performing DCT. dct() transforms data values from the time domain
     # to DCT coefficients, which are then set to zero if their frequencies are
     # below the cutoff frequency. This effectively removes fluctuations with
     # periods longer than the cutoff.
@@ -49,14 +53,18 @@ def precip_function(
     # Identifying outliers from SATV.
     outliers = (high_pass_precip < satv_lcl) | (high_pass_precip > satv_ucl)
 
-    # Translating outliers back into precipitation.
+    # Translating outliers back into data.
     baseline = precip_avg - high_pass_precip
     lcl = baseline + satv_lcl
     ucl = baseline + satv_ucl
 
-    # Plotting avg precipitation and its SATV-based control limits.
+    # Plotting avg data and its SATV-based control limits.
     fig, ax = plt.subplots(figsize=(12, 5))
-    ax.plot(precip_avg.index, precip_avg.values, label="Average precipitation")
+    ax.plot(
+        precip_avg.index,
+        precip_avg.values,
+        label=f"Average {property_label}",
+    )
     ax.plot(
         precip_avg.index,
         lcl,
@@ -85,7 +93,7 @@ def precip_function(
     ax.set(
         title=f"SATV-based Statistical Process Control for {region} ({period})",
         xlabel="Time",
-        ylabel="Average precipitation (mm/hour)",
+        ylabel=f"Average {property_label} ({unit})",
     )
     ax.grid(True)
     ax.legend()
@@ -93,11 +101,11 @@ def precip_function(
 
     outlier_details = pd.DataFrame(
         {
-            "average_precipitation": precip_avg[outliers],
+            f"average_{property_label}": precip_avg[outliers],
             "SATV": high_pass_precip[outliers],
         }
     )
-    outlier_summary = outlier_details["average_precipitation"].agg(
+    outlier_summary = outlier_details[f"average_{property_label}"].agg(
         ["count", "mean", "min", "max"]
     )
 

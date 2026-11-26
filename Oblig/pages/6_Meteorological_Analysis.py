@@ -1,5 +1,5 @@
 import streamlit as st
-from modules.precip_function import precip_function
+from modules.satv_function import SATV_function
 from modules.temp_function import temp_function
 
 st.title("SPC Analysis and LOF Anomaly Detection")
@@ -16,15 +16,20 @@ region, start_date, end_date = st.session_state["meteorological_selection"]
 st.caption(f"Showing {region}, {start_date} to {end_date}")
 
 # Splitting page into columns as instructed.
-left_tab, right_tab = st.tabs(["Precipitation SPC", "Temperature LOF"])
+left_tab, right_tab = st.tabs(["SATV Analysis", "Temperature LOF"])
 
 
 
 # --- Left Column
 
 with left_tab:
-    st.subheader("Precipitation SPC Analysis")
+    st.subheader("SATV Analysis")
     with st.expander("Analysis settings"):
+        weather_property = st.selectbox(
+            "Weather property",
+            options=["temperature", "precipitation"],
+            index=0,
+        )
         cutoff_input = st.slider(
             "Cutoff period (days)",
             min_value=7,
@@ -40,8 +45,9 @@ with left_tab:
             step=0.25,
             format="%.2f",
         )
-    fig, _, outlier_summary = precip_function(
+    fig, _, outlier_summary = SATV_function(
         weather_data,
+        weather_property=weather_property,
         region=region,
         cutoff_input=cutoff_input,
         stdev_n=stdev_n,
