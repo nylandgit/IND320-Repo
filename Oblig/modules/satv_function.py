@@ -63,18 +63,15 @@ def SATV_function(
     fig.add_trace(
         go.Scatter(
             x=precip_avg.index,
-            y=precip_avg.values,
-            mode="lines",
-            name=f"Average {property_label}",
-        )
-    )
-    fig.add_trace(
-        go.Scatter(
-            x=precip_avg.index,
             y=lcl,
             mode="lines",
-            line={"color": "orange", "dash": "dash"},
+            line={"color": "#D97706", "dash": "dash", "width": 1.5},
             name="Lower control limit",
+            legendrank=2,
+            hovertemplate=(
+                f"%{{x|%b %d, %Y}}<br>Lower limit: "
+                f"%{{y:.2f}} {unit}<extra></extra>"
+            ),
         )
     )
     fig.add_trace(
@@ -82,8 +79,29 @@ def SATV_function(
             x=precip_avg.index,
             y=ucl,
             mode="lines",
-            line={"color": "orange", "dash": "dash"},
+            line={"color": "#D97706", "dash": "dash", "width": 1.5},
+            fill="tonexty",
+            fillcolor="rgba(217, 119, 6, 0.10)",
             name="Upper control limit",
+            legendrank=3,
+            hovertemplate=(
+                f"%{{x|%b %d, %Y}}<br>Upper limit: "
+                f"%{{y:.2f}} {unit}<extra></extra>"
+            ),
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=precip_avg.index,
+            y=precip_avg.values,
+            mode="lines",
+            line={"color": "#2563EB", "width": 2},
+            name=f"Average {property_label}",
+            legendrank=1,
+            hovertemplate=(
+                f"%{{x|%b %d, %Y}}<br>Average {property_label}: "
+                f"%{{y:.2f}} {unit}<extra></extra>"
+            ),
         )
     )
     fig.add_trace(
@@ -91,8 +109,17 @@ def SATV_function(
             x=high_pass_precip.index[outliers],
             y=precip_avg.loc[outliers],
             mode="markers",
-            marker={"color": "crimson"},
+            marker={
+                "color": "#DC2626",
+                "size": 8,
+                "line": {"color": "white", "width": 1},
+            },
             name="SATV outliers",
+            legendrank=4,
+            hovertemplate=(
+                f"%{{x|%b %d, %Y}}<br>Outlier: "
+                f"%{{y:.2f}} {unit}<extra></extra>"
+            ),
         )
     )
 
@@ -100,13 +127,44 @@ def SATV_function(
     if precip_avg.index[0].year != precip_avg.index[-1].year:
         period = f"{precip_avg.index[0].year}-{precip_avg.index[-1].year}"
     fig.update_layout(
-        title=f"SATV-based Statistical Process Control for {region} ({period})",
+        title={
+            "text": (
+                f"SATV-based Statistical Process Control for "
+                f"{region} ({period})"
+            ),
+            "x": 0,
+            "xanchor": "left",
+            "font": {"size": 18},
+        },
         xaxis_title="Time",
         yaxis_title=f"Average {property_label} ({unit})",
         height=500,
+        template="plotly_white",
+        hovermode="x unified",
+        legend={
+            "orientation": "h",
+            "yanchor": "bottom",
+            "y": 1.02,
+            "xanchor": "left",
+            "x": 0,
+        },
+        margin={"l": 65, "r": 25, "t": 95, "b": 55},
+        font={"family": "Arial, sans-serif", "size": 13, "color": "#374151"},
     )
-    fig.update_xaxes(showgrid=True)
-    fig.update_yaxes(showgrid=True)
+    fig.update_xaxes(
+        showgrid=True,
+        gridcolor="#E5E7EB",
+        showline=True,
+        linecolor="#D1D5DB",
+        zeroline=False,
+    )
+    fig.update_yaxes(
+        showgrid=True,
+        gridcolor="#E5E7EB",
+        showline=True,
+        linecolor="#D1D5DB",
+        zeroline=False,
+    )
 
     outlier_details = pd.DataFrame(
         {

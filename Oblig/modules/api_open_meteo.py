@@ -30,34 +30,6 @@ def download_region(
     locations = locations_by_region_el[region]
     points = pd.DataFrame(locations, columns=["lat", "lon"])
 
-    """
-    # Getting the elevation of every sampled point from Open-Meteo's Elevation
-    # API (max 100 coordinates per request), see code block below. Iterating
-    # over sampled points in batches of 100.
-    elevations = []
-    for batch_start in range(0, len(points), 100):
-        batch = points.iloc[batch_start:batch_start + 100]
-
-        # Printing progress messages as program may run for several minutes.
-        if progress_callback is not None:
-            progress_callback(
-                f"Getting elevations for points {batch_start + 1}-"
-                f"{batch_start + len(batch)}/{len(points)}..."
-            )
-
-        # Retrieving elevation data for each sampled point in iteration.
-        elev_response = retry_session.get(
-            "https://api.open-meteo.com/v1/elevation",
-            params={
-                "latitude": ",".join(map(str, batch["lat"])),
-                "longitude": ",".join(map(str, batch["lon"])),
-            },
-        )
-        elev_response.raise_for_status()
-        elevations += elev_response.json()["elevation"]
-    points["elevation"] = elevations
-    """
-
     # Merging sampled points into ERA5 grid cells (0.25 degrees). Each cell is
     # requested once, at the mean position and mean elevation of the sampled
     # points inside it. "weight" is the number of sampled points in the cell.
