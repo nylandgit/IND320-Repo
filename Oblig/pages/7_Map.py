@@ -13,7 +13,7 @@ RED = "#ff4b4b"
 st.set_page_config(page_title="Map and selectors", layout="wide")
 st.title("Map and selectors")
 
-AREA_TYPES = {"Price area (EL)": "EL", "Water area (VASS)": "VASS", "Weather area": "Weather"}
+AREA_TYPES = {"Price area (EL)": "EL", "Water area (VASS)": "VASS", "Weather by electricity area": "Weather"}
 code = AREA_TYPES[st.radio("Area type", list(AREA_TYPES), horizontal=True)]
 
 
@@ -118,13 +118,13 @@ elif code == "VASS":
     st.info("No VASS-area geometry is available yet.")
 
 else:
-    gdf = load_areas("precipitation_areas.geojson", "REGIONNAVN")
+    gdf = load_areas("electricity_areas.geojson", "budomr")
     prop = st.radio("Weather property", ["temperature", "precipitation"], horizontal=True)
     label = f"Weighted mean {prop}"
     weather = st.session_state.get("meteorological_data")
 
     if weather is None:
-        show_map(gdf, pd.DataFrame({"map_name": [], "value": []}), "NVE precipitation areas", label, code)
+        show_map(gdf, pd.DataFrame({"map_name": [], "value": []}), "Weather by electricity area", label, code)
         st.info("Retrieve meteorological data first to show area values.")
         st.stop()
 
@@ -146,4 +146,4 @@ else:
     grouped = joined.groupby("map_name")
     values = (grouped["wv"].sum() / grouped["weight"].sum()).rename("value").reset_index()
 
-    show_map(gdf, values, "NVE precipitation areas", label, code)
+    show_map(gdf, values, "Weather by electricity area", label, code)
