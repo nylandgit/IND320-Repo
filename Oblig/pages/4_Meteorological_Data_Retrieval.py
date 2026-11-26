@@ -38,7 +38,11 @@ end_date = (
     pd.Period(st.session_state["selected_end_month"], freq="M")
     .end_time.date().isoformat()
 )
-selection = (region, start_date, end_date)
+include_elevation = st.checkbox(
+    "Include Elevation (slower runtime, more accurate data)",
+    value=False,
+)
+selection = (region, start_date, end_date, include_elevation)
 
 # Creating button.
 if st.button("Initiate data retrieval"):
@@ -52,6 +56,7 @@ if st.button("Initiate data retrieval"):
             end_date,
             locations_by_region_el,
             progress_callback=status.write,
+            include_elevation=include_elevation,
         )
 
         st.session_state["meteorological_data"] = weather_data

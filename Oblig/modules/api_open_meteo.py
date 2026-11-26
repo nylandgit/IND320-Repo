@@ -23,12 +23,43 @@ def download_region(
     end_date,
     locations_by_region_el,
     progress_callback=None,
+    include_elevation=False,
 ):
     url = "https://archive-api.open-meteo.com/v1/archive"
     region_data = []
     
     locations = locations_by_region_el[region]
     points = pd.DataFrame(locations, columns=["lat", "lon"])
+
+    if include_elevation:
+        # Getting the elevation of every sampled point from Open-Meteo's Elevation
+        # API (max 100 coordinates per request), see code block below. Iterating
+        # over sampled points in batches of 100.
+        elevations = []
+        for batch_start in range(0, len(points), 100):
+            batch = points.iloc[batch_start:batch_start + 100]
+            
+            # Printing progress messages as program may for several minutes.
+            message = (
+                f"Getting elevations for points {batch_start + 1}-"
+                f"{batch_start + len(batch)}/{len(points)}..."
+            )
+            if progress_callback is not None:
+                progress_callback(message)
+            else:
+                print(message, flush=True)
+            
+            # Retrieving elevation data for each sampled point in iteration.
+            elev_response = retry_session.get(
+                "https://api.open-meteo.com/v1/elevation",
+                params={
+                    "latitude": ",".join(map(str, batch["lat"])),
+                    "longitude": ",".join(map(str, batch["lon"])),
+                },
+            )
+            elev_response.raise_for_status()
+            elevations += elev_response.json()["elevation"]
+        points["elevation"] = elevations
 
     # Merging sampled points into ERA5 grid cells (0.25 degrees). Each cell is
     # requested once, at the mean position and mean elevation of the sampled
@@ -39,11 +70,15 @@ def download_region(
     points["cell_lon"] = (points["lon"] / 0.25).round() * 0.25
 
     # Defining cells to be called at mean of lon/lat and elevation.
+    aggregations = {
+        "lat": ("lat", "mean"),
+        "lon": ("lon", "mean"),
+        "weight": ("lat", "size"),
+    }
+    if include_elevation:
+        aggregations["elevation"] = ("elevation", "mean")
     cells = points.groupby(["cell_lat", "cell_lon"]).agg(
-        lat=("lat", "mean"),
-        lon=("lon", "mean"),
-        #elevation=("elevation", "mean"),
-        weight=("lat", "size"),
+        **aggregations
     ).reset_index()
 
     # Printing progress message.
@@ -66,13 +101,14 @@ def download_region(
         params = {
             "latitude": chunk["lat"].tolist(),
             "longitude": chunk["lon"].tolist(),
-            #"elevation": chunk["elevation"].tolist(),
             "start_date": start_date,
             "end_date": end_date,
             "hourly": ["temperature_2m", "precipitation"],
             "models": "era5",
             "timezone": "Europe/Berlin",
         }
+        if include_elevation:
+            params["elevation"] = chunk["elevation"].tolist()
 
         # Printing progress messages (long code execution times).
         if progress_callback is not None:
@@ -112,7 +148,8 @@ def download_region(
             point_data = pd.DataFrame(data=hourly_data)
             point_data["latitude"] = cell["lat"]
             point_data["longitude"] = cell["lon"]
-            #point_data["elevation"] = cell["elevation"]
+            if include_elevation:
+                point_data["elevation"] = cell["elevation"]
             point_data["weight"] = int(cell["weight"])
             region_data.append(point_data)
 
@@ -126,10 +163,4 @@ def download_region(
     # Saving everything to csv so the API call only needs to be done once.
     region_data = pd.concat(region_data, ignore_index=True)
     
-    """
-    region_data.to_csv(csv_file, index=False)
-        if progress_callback is not None:
-            progress_callback(f"Saved {len(region_data)} rows to {csv_file.name}.")
-        
-    """
     return region_data
