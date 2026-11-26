@@ -53,7 +53,7 @@ with left_tab:
         cutoff_input=cutoff_input,
         stdev_n=stdev_n,
     )
-    st.pyplot(fig)
+    st.plotly_chart(fig, use_container_width=True)
     st.write(outlier_summary)
 
 
@@ -83,5 +83,5 @@ with right_tab:
         outlier_proportion=outlier_proportion,
         weather_property=weather_property,
     )
-    st.pyplot(fig)
+    st.plotly_chart(fig, use_container_width=True)
     st.write(outlier_summary)

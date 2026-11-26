@@ -1,6 +1,6 @@
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import plotly.graph_objects as go
 from scipy.fft import dct, idct
 
 def SATV_function(
@@ -59,45 +59,54 @@ def SATV_function(
     ucl = baseline + satv_ucl
 
     # Plotting avg data and its SATV-based control limits.
-    fig, ax = plt.subplots(figsize=(12, 5))
-    ax.plot(
-        precip_avg.index,
-        precip_avg.values,
-        label=f"Average {property_label}",
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
+            x=precip_avg.index,
+            y=precip_avg.values,
+            mode="lines",
+            name=f"Average {property_label}",
+        )
     )
-    ax.plot(
-        precip_avg.index,
-        lcl,
-        color="orange",
-        linestyle="--",
-        label="Lower control limit",
+    fig.add_trace(
+        go.Scatter(
+            x=precip_avg.index,
+            y=lcl,
+            mode="lines",
+            line={"color": "orange", "dash": "dash"},
+            name="Lower control limit",
+        )
     )
-    ax.plot(
-        precip_avg.index,
-        ucl,
-        color="orange",
-        linestyle="--",
-        label="Upper control limit",
+    fig.add_trace(
+        go.Scatter(
+            x=precip_avg.index,
+            y=ucl,
+            mode="lines",
+            line={"color": "orange", "dash": "dash"},
+            name="Upper control limit",
+        )
     )
-    ax.scatter(
-        high_pass_precip.index[outliers],
-        precip_avg.loc[outliers],
-        color="crimson",
-        label="SATV outliers",
-        zorder=3,
+    fig.add_trace(
+        go.Scatter(
+            x=high_pass_precip.index[outliers],
+            y=precip_avg.loc[outliers],
+            mode="markers",
+            marker={"color": "crimson"},
+            name="SATV outliers",
+        )
     )
 
     period = str(precip_avg.index[0].year)
     if precip_avg.index[0].year != precip_avg.index[-1].year:
         period = f"{precip_avg.index[0].year}-{precip_avg.index[-1].year}"
-    ax.set(
+    fig.update_layout(
         title=f"SATV-based Statistical Process Control for {region} ({period})",
-        xlabel="Time",
-        ylabel=f"Average {property_label} ({unit})",
+        xaxis_title="Time",
+        yaxis_title=f"Average {property_label} ({unit})",
+        height=500,
     )
-    ax.grid(True)
-    ax.legend()
-    fig.tight_layout()
+    fig.update_xaxes(showgrid=True)
+    fig.update_yaxes(showgrid=True)
 
     outlier_details = pd.DataFrame(
         {

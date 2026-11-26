@@ -1,5 +1,5 @@
-import matplotlib.pyplot as plt
 import pandas as pd
+import plotly.graph_objects as go
 from sklearn.neighbors import LocalOutlierFactor
 
 
@@ -26,30 +26,36 @@ def lof_function(
     anomalies = labels == -1
 
     # Plotting w/ anomalies, outlier details.
-    fig, ax = plt.subplots(figsize=(12, 5))
-    ax.plot(
-        temp_avg.index,
-        temp_avg.values,
-        label=f"Average {property_label}",
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
+            x=temp_avg.index,
+            y=temp_avg.values,
+            mode="lines",
+            name=f"Average {property_label}",
+        )
     )
-    ax.scatter(
-        temp_avg.index[anomalies],
-        temp_avg[anomalies],
-        color="red",
-        label="Anomalies",
+    fig.add_trace(
+        go.Scatter(
+            x=temp_avg.index[anomalies],
+            y=temp_avg[anomalies],
+            mode="markers",
+            marker={"color": "red"},
+            name="Anomalies",
+        )
     )
 
     period = str(temp_avg.index[0].year)
     if temp_avg.index[0].year != temp_avg.index[-1].year:
         period = f"{temp_avg.index[0].year}-{temp_avg.index[-1].year}"
-    ax.set(
+    fig.update_layout(
         title=f"Average {property_label} over {region} ({period})",
-        xlabel="Time",
-        ylabel=f"Average {property_label} ({unit})",
+        xaxis_title="Time",
+        yaxis_title=f"Average {property_label} ({unit})",
+        height=500,
     )
-    ax.grid(True)
-    ax.legend()
-    fig.tight_layout()
+    fig.update_xaxes(showgrid=True)
+    fig.update_yaxes(showgrid=True)
 
     outlier_details = pd.DataFrame(
         {f"average_{property_label}": temp_avg[anomalies]}
