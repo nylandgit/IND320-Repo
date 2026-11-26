@@ -14,8 +14,11 @@ st.set_page_config(page_title="Map and selectors", layout="wide")
 st.title("Map and selectors")
 
 AREA_TYPES = {"Price Areas (EL)": "EL", "Weather Areas": "Weather"}
-code = AREA_TYPES[st.radio("Area type", list(AREA_TYPES), horizontal=True)]
-st.selectbox("Weather variable", ["temperature", "precipitation"])
+area_column, parameter_column = st.columns([3, 1])
+with area_column:
+    code = AREA_TYPES[st.radio("Area type", list(AREA_TYPES), horizontal=True)]
+with parameter_column:
+    st.selectbox("Weather Parameter", ["temperature", "precipitation"])
 
 
 @st.cache_data
