@@ -13,8 +13,9 @@ RED = "#ff4b4b"
 st.set_page_config(page_title="Map and selectors", layout="wide")
 st.title("Map and selectors")
 
-AREA_TYPES = {"Price area (EL)": "EL", "Water area (VASS)": "VASS", "Weather by electricity area": "Weather"}
+AREA_TYPES = {"Price Areas (EL)": "EL", "Weather Areas": "Weather"}
 code = AREA_TYPES[st.radio("Area type", list(AREA_TYPES), horizontal=True)]
+st.selectbox("Weather variable", ["temperature", "precipitation"])
 
 
 @st.cache_data
@@ -114,36 +115,7 @@ if code == "EL":
     )
     show_map(gdf, values, "EL price areas", "Mean filling ratio (%)", code)
 
-elif code == "VASS":
-    st.info("No VASS-area geometry is available yet.")
-
 else:
-    gdf = load_areas("electricity_areas.geojson", "budomr")
-    prop = st.radio("Weather property", ["temperature", "precipitation"], horizontal=True)
-    label = f"Weighted mean {prop}"
-    weather = st.session_state.get("meteorological_data")
-
-    if weather is None:
-        show_map(gdf, pd.DataFrame({"map_name": [], "value": []}), "Weather by electricity area", label, code)
-        st.info("Retrieve meteorological data first to show area values.")
-        st.stop()
-
-    weather = weather.assign(date=pd.to_datetime(weather["date"]))
-    lo, hi = weather["date"].min().date(), weather["date"].max().date()
-    dates = st.date_input("Date range", (lo, hi), min_value=lo, max_value=hi)
-    if len(dates) != 2:
-        st.stop()
-    weather = weather[weather["date"].dt.date.between(*dates)]
-
-    column = "temperature_2m" if prop == "temperature" else "precipitation"
-    points = gpd.GeoDataFrame(
-        weather,
-        geometry=gpd.points_from_xy(weather["longitude"], weather["latitude"]),
-        crs="EPSG:4326",
-    )
-    joined = gpd.sjoin(points, gdf, predicate="within").dropna(subset=[column])
-    joined["wv"] = joined[column] * joined["weight"]
-    grouped = joined.groupby("map_name")
-    values = (grouped["wv"].sum() / grouped["weight"].sum()).rename("value").reset_index()
-
-    show_map(gdf, values, "Weather by electricity area", label, code)
+    gdf = load_areas("precipitation_areas.geojson", "REGIONNAVN")
+    values = gdf[["map_name"]].assign(value=1)
+    show_map(gdf, values, "Weather areas", "Area", code)
