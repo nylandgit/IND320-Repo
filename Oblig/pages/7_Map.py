@@ -76,6 +76,15 @@ def show_map(gdf, values, title, label, code):
             )
 
     fig.update_geos(fitbounds="locations", visible=False, showcountries=True, countrycolor="#777777")
+    if code == "Weather":
+        west, south, east, north = gdf.total_bounds
+        lon_padding = (east - west) * 0.05
+        lat_padding = (north - south) * 0.05
+        fig.update_geos(
+            fitbounds=False,
+            lonaxis_range=[west - lon_padding, east + lon_padding],
+            lataxis_range=[south - lat_padding, north + lat_padding],
+        )
     fig.update_layout(title=title, margin={"r": 0, "t": 45, "l": 0, "b": 0}, height=650)
     st.plotly_chart(fig, width="stretch", key=key, on_select="rerun", selection_mode="points")
 
