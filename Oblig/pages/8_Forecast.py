@@ -182,6 +182,7 @@ fig.add_trace(
         y=plot_data["Filling Ratio"],
         mode="lines",
         name="Historical",
+        line=dict(color="#ffabab"),
     )
 )
 if forecast is not None:
@@ -191,6 +192,7 @@ if forecast is not None:
             y=forecast["Forecast"],
             mode="lines+markers",
             name="Forecast",
+            line=dict(color="#ffabab"),
         )
     )
 fig.update_layout(
