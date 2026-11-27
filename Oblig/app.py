@@ -13,11 +13,11 @@ st.markdown(
     """
     <style>
     [data-testid="stSidebar"] { display: none; }
-    [data-testid="stHeader"] { height: 0; }
+    [data-testid="stHeader"] { display: none; }
     [data-testid="stToolbar"] { visibility: hidden; }
     [data-testid="stAppViewBlockContainer"] {
         max-width: 100%;
-        padding-top: 3rem;
+        padding-top: 0 !important;
         padding-left: 5rem;
         padding-right: 5rem;
     }
