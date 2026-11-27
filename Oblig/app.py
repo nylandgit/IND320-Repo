@@ -1,3 +1,6 @@
+import runpy
+from pathlib import Path
+
 import streamlit as st
 
 st.set_page_config(
@@ -139,14 +142,12 @@ with left:
             "Select year range",
             min_value=1995,
             max_value=2026,
-            value=st.session_state["global_year_range"],
             key="global_year_range",
         )
         month_start, month_end = st.slider(
             "Select month range",
             min_value=1,
             max_value=12,
-            value=st.session_state["global_month_range"],
             key="global_month_range",
         )
         month_names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -167,7 +168,7 @@ with right:
         home()
     else:
         page_path = next(
-            path for label, page_key, path in PAGES
+            path for title, page_key, path in PAGES
             if page_key == selected_page
         )
-        st.Page(page_path).run()
+        runpy.run_path(Path(__file__).resolve().parent / page_path)
