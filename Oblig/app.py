@@ -1,74 +1,168 @@
 import streamlit as st
 
-st.set_page_config(page_title="IND320 Energy Data Explorer", page_icon="⚡")
+st.set_page_config(
+    page_title="IND320 Energy Data Explorer",
+    page_icon="⚡",
+    layout="wide",
+)
+
+st.markdown(
+    """
+    <style>
+    [data-testid="stSidebar"] { display: none; }
+    [data-testid="stHeader"] { height: 0; }
+    [data-testid="stToolbar"] { visibility: hidden; }
+    [data-testid="block-container"] {
+        max-width: 100%;
+        padding-top: 1rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    [data-testid="column"]:first-child {
+        max-width: 330px;
+    }
+    [data-testid="stVerticalBlockBorderWrapper"] {
+        border-radius: 18px;
+    }
+    div[data-testid="stKey-page-selector"] {
+        min-height: 58px;
+        max-height: 58px;
+        overflow: hidden;
+        transition: max-height 0.25s ease;
+    }
+    div[data-testid="stKey-page-selector"]:hover {
+        max-height: 520px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 
 def home():
     st.title("IND320 Energy Data Explorer")
-
     st.caption(
-            "Technical details and project information are available in the "
-            "[GitHub README](https://github.com/nylandgit/IND320-Repo)."
-        )
-    
+        "Technical details and project information are available in the "
+        "[GitHub README](https://github.com/nylandgit/IND320-Repo)."
+    )
     st.write(
         "Explore Norwegian reservoir statistics, cross-border electricity flows, "
         "meteorological data, and time-series analysis."
     )
-
     st.subheader("Quick start")
     st.markdown(
         """
-        1. Open **Magasinstatistikk Data Selector and Plots**.
-        2. Choose an **area type**, **area number**, **month range**, and **column**.
+        1. Open **Magasinstatistikk Data Plots**.
+        2. Choose the global area type, area number, year range, and month range.
         3. Open **Meteorological Data Retrieval** and retrieve data for the selected range.
-        4. Explore the analyses in **STL Analysis and Spectrogram** and
-           **Meteorological Analysis**.
+        4. Explore **STL Analysis and Spectrogram** and **Meteorological Analysis**.
         """
     )
 
-    st.subheader("Page guide")
 
-    with st.expander("Magasinstatistikk Data Selector and Plots"):
-        st.write(
-            "WIP."
-        )
-
-    with st.expander("In-Out Flows Charts"):
-        st.write(
-            "WIP."
-        )
-
-    with st.expander("Meteorological Data Retrieval"):
-        st.write(
-            "WIP."
-        )
-
-    with st.expander("STL Analysis and Spectrogram"):
-        st.write(
-            "WIP."
-        )
-
-    with st.expander("Meteorological Analysis"):
-        st.write(
-            "WIP."
-        )
-
-    st.subheader("Navigation tip")
-    st.info("Use the sidebar to move between pages. Selections are kept while the app is running.")
-
-pages = [
-    st.Page(home, title="Home"),
-    st.Page("pages/1_Reservoirs_Data_(ToBeRemoved).py", title="Reservoirs Data (ToBeRemoved)"),
-    st.Page("pages/2_Magasinstatistikk_Data_Selector_and_Plots.py", title="Magasinstatistikk Data Selector and Plots"),
-    st.Page("pages/3_In-Out_Flows_Charts.py", title="In-Out Flows Charts"),
-    st.Page("pages/4_Meteorological_Data_Retrieval.py", title="Meteorological Data Retrieval"),
-    st.Page("pages/5_STL_Analysis_and_Spectrogram.py", title="STL Analysis and Spectrogram"),
-    st.Page("pages/6_Meteorological_Analysis.py", title="Meteorological Analysis"),
-    st.Page("pages/7_Map.py", title="Map"),
-    st.Page("pages/8_Forecast.py", title="Forecast"),
-    st.Page("pages/9_Correlation_Analysis.py", title="Correlation Analysis"),
+PAGES = [
+    ("Home", "home", None),
+    ("Map", "map", "pages/7_Map.py"),
+    ("separator", None, None),
+    ("Magasinstatistikk Data Plots", "data", "pages/2_Magasinstatistikk_Data_Selector_and_Plots.py"),
+    ("Forecast", "forecast", "pages/8_Forecast.py"),
+    ("STL Analysis and Spectrogram", "stl", "pages/5_STL_Analysis_and_Spectrogram.py"),
+    ("In-Out Flows Chart", "flows", "pages/3_In-Out_Flows_Charts.py"),
+    ("separator", None, None),
+    ("Meteorological Data Retrieval", "weather_data", "pages/4_Meteorological_Data_Retrieval.py"),
+    ("Meteorological Analysis", "meteorological", "pages/6_Meteorological_Analysis.py"),
+    ("Correlation Analysis", "correlation", "pages/9_Correlation_Analysis.py"),
 ]
 
-page = st.navigation(pages)
-page.run()
+if "selected_page" not in st.session_state:
+    st.session_state["selected_page"] = "home"
+
+# Initialize global inputs once. Widget keys preserve values across page flips.
+if "global_area_type" not in st.session_state:
+    st.session_state["global_area_type"] = "EL"
+if "global_area_number" not in st.session_state:
+    st.session_state["global_area_number"] = 3
+if "global_year_range" not in st.session_state:
+    st.session_state["global_year_range"] = (2020, 2025)
+if "global_month_range" not in st.session_state:
+    st.session_state["global_month_range"] = (1, 12)
+
+left, right = st.columns([1, 4], gap="medium")
+
+with left:
+    with st.container(border=True, key="page-selector"):
+        st.markdown("### Page Selector")
+        for label, page_key, path in PAGES:
+            if label == "separator":
+                st.markdown("---")
+                continue
+            if st.button(
+                label,
+                key=f"nav_{page_key}",
+                use_container_width=True,
+                type="primary" if st.session_state["selected_page"] == page_key else "secondary",
+            ):
+                st.session_state["selected_page"] = page_key
+
+    with st.container(border=True):
+        st.markdown("### Global User Input")
+        area_type_column, area_number_column = st.columns(2)
+        with area_type_column:
+            area_type = st.radio(
+                "Select area type",
+                options=["EL", "NO", "VASS"],
+                key="global_area_type",
+            )
+        area_options = (
+            list(range(1, 6))
+            if area_type == "EL"
+            else ([0] if area_type == "NO" else list(range(1, 4)))
+        )
+        with area_number_column:
+            current_area_number = st.session_state["global_area_number"]
+            if current_area_number not in area_options:
+                current_area_number = 3 if area_type == "EL" else area_options[0]
+                st.session_state["global_area_number"] = current_area_number
+            st.selectbox(
+                "Area number",
+                options=area_options,
+                index=area_options.index(current_area_number),
+                key="global_area_number",
+            )
+
+        st.slider(
+            "Select year range",
+            min_value=1995,
+            max_value=2026,
+            value=st.session_state["global_year_range"],
+            key="global_year_range",
+        )
+        month_start, month_end = st.slider(
+            "Select month range",
+            min_value=1,
+            max_value=12,
+            value=st.session_state["global_month_range"],
+            key="global_month_range",
+        )
+        month_names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        st.caption(f"{month_names[month_start - 1]} - {month_names[month_end - 1]}")
+
+        # Downstream pages use these aliases for compatibility.
+        st.session_state["plot_area_type"] = area_type
+        st.session_state["plot_area_number"] = st.session_state["global_area_number"]
+        st.session_state["selected_start_year"] = st.session_state["global_year_range"][0]
+        st.session_state["selected_end_year"] = st.session_state["global_year_range"][1]
+        st.session_state["selected_start_month"] = f"{st.session_state['global_year_range'][0]}-{month_start:02d}"
+        st.session_state["selected_end_month"] = f"{st.session_state['global_year_range'][1]}-{month_end:02d}"
+
+with right:
+    selected_page = st.session_state["selected_page"]
+    if selected_page == "home":
+        home()
+    else:
+        page_path = next(
+            path for label, page_key, path in PAGES
+            if page_key == selected_page
+        )
+        st.Page(page_path).run()

@@ -10,7 +10,6 @@ from modules.api_mag import load_data
 GEO_DIR = Path(__file__).resolve().parent.parent / "geojson"
 RED = "#ff4b4b"
 
-st.set_page_config(page_title="Map and selectors", layout="wide")
 st.title("Map and selectors")
 
 AREA_TYPES = {"Price Areas (EL)": "EL", "Weather Areas": "Weather"}
@@ -32,6 +31,16 @@ def show_map(gdf, values, title, label, code):
     """Draw the coloured map, highlight the stored selection, store new clicks."""
     key = f"map_{code}"
 
+    if code == "EL":
+        el_number = (
+            st.session_state["global_area_number"]
+            if st.session_state["global_area_type"] == "EL"
+            else 3
+        )
+        if st.session_state.get("selected_map_area_type") != "Weather":
+            st.session_state["selected_map_area"] = f"NO {el_number}"
+            st.session_state["selected_map_area_type"] = "EL"
+
     # Read the click from the previous run *before* building the figure,
     # so the outline changes immediately.
     state = st.session_state.get(key) or {}
@@ -41,6 +50,8 @@ def show_map(gdf, values, title, label, code):
         st.session_state.update(selected_map_area=name, selected_map_area_type=code)
         if code == "EL":
             st.session_state.update(selected_el_area=name, selected_area_number=int(name[-1]))
+            st.session_state["global_area_type"] = "EL"
+            st.session_state["global_area_number"] = int(name[-1])
         else:
             st.session_state["selected_weather_area"] = name
 
@@ -99,16 +110,12 @@ def show_map(gdf, values, title, label, code):
 if code == "EL":
     gdf = load_areas("electricity_areas.geojson", "budomr")
     mag = load_data()
-    months = sorted(mag["Date"].dt.to_period("M").unique())
-    start, end = st.select_slider(
-        "Select month range",
-        options=months,
-        value=(months[0], months[-1]),
-        format_func=str,
-        key="map_price_month_range",
-    )
+    year_start, year_end = st.session_state["global_year_range"]
+    month_start, month_end = st.session_state["global_month_range"]
     el = mag[
-        mag["Date"].dt.to_period("M").between(start, end) & (mag["Area Type"] == "EL")
+        mag["Date"].dt.year.between(year_start, year_end)
+        & mag["Date"].dt.month.between(month_start, month_end)
+        & (mag["Area Type"] == "EL")
     ]
     values = (
         el.assign(map_name="NO " + el["Area Number"].astype(str))

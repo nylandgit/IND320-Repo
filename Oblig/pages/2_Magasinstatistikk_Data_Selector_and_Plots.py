@@ -22,23 +22,9 @@ columns_to_plot = [
     "Change FR",
 ]
 
-# Taking user input to decide which area type is to be plotted.
-plot_area_type = st.radio(
-    "Select area type",
-    options=["EL", "NO", "VASS"])
-
-# Selecting offered area numbers based on user input for area type.
-if plot_area_type == "EL":
-    area_number_options = list(range(1, 6))
-elif plot_area_type == "NO":
-    area_number_options = [0]
-else:
-    area_number_options = list(range(1, 4))
-
-# Taking user input to decide which area number is to be plotted.
-plot_area_number = st.selectbox(
-    "Select area number",
-    options=area_number_options)
+# Using the persisted global area selection.
+plot_area_type = st.session_state["global_area_type"]
+plot_area_number = st.session_state["global_area_number"]
 
 # Selecting data from df matching specified area type and number.
 # Plotting all data in chart will lead to overlapping dates, as
@@ -52,7 +38,7 @@ plot_data = df[
 
 # --- Selection Slider ---
 
-# Preparing selectable months for selection slider using list:
+# Preparing selectable months from the global year and month ranges.
 # * plot_data.index selects the index values (Date) for each column
 #   in plot_data. These dates are already sorted chronologically.
 # * .to_period("M") converts the dates into monthly periods.
@@ -60,36 +46,20 @@ plot_data = df[
 # * .tolist() makes available_months a Python list. We now have a de-
 #    duplicated, ordered list of available months for our slider.
 available_months = plot_data.index.to_period("M").unique().tolist()
+selected_year_start, selected_year_end = st.session_state["global_year_range"]
+selected_month_start, selected_month_end = st.session_state["global_month_range"]
 
-# Creating selection slider for selecting specific subsets of months,
-# using ready-made available_months list.
-default_start_month = pd.Period("2024-01", freq="M")
-default_end_month = pd.Period("2024-06", freq="M")
+available_months = [
+    month for month in available_months
+    if selected_year_start <= month.year <= selected_year_end
+    and selected_month_start <= month.month <= selected_month_end
+]
+if not available_months:
+    st.warning("No reservoir observations match the selected global date range.")
+    st.stop()
 
-if default_start_month not in available_months:
-    default_start_month = available_months[0]
-if default_end_month not in available_months:
-    default_end_month = available_months[-1]
-
-if "data_plots_month_range" not in st.session_state:
-    st.session_state["data_plots_month_range"] = (
-        default_start_month,
-        default_end_month,
-    )
-
-saved_start_month, saved_end_month = st.session_state["data_plots_month_range"]
-if saved_start_month not in available_months:
-    saved_start_month = default_start_month
-if saved_end_month not in available_months:
-    saved_end_month = default_end_month
-
-start_month, end_month = st.select_slider(
-    "Select months",
-    options=available_months,
-    value=(saved_start_month, saved_end_month),
-    key="data_plots_month_range",
-    format_func=str,
-)
+start_month = available_months[0]
+end_month = available_months[-1]
 
 # Saving selection to session state for later use on other pages.
 st.session_state["selected_start_month"] = str(start_month)

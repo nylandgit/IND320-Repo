@@ -83,8 +83,8 @@ if len(weekly_data) < 3:
 window = st.slider(
     "Sliding window (weeks)",
     min_value=3,
-    max_value=len(weekly_data),
-    value=min(45, len(weekly_data)),
+    max_value=min(52, len(weekly_data)),
+    value=min(12, min(52, len(weekly_data))),
 )
 correlation = weekly_data["Filling Ratio"].rolling(
     window=window,
