@@ -210,11 +210,15 @@ except ValueError as error:
     st.warning(str(error))
     st.stop()
 
+most_recent_date = area_data["Date"].max()
+plot_start = most_recent_date - pd.DateOffset(years=1)
+plot_data = area_data.loc[area_data["Date"] >= plot_start]
+
 fig = go.Figure()
 fig.add_trace(
     go.Scatter(
-        x=area_data["Date"],
-        y=area_data["Filling Ratio"],
+        x=plot_data["Date"],
+        y=plot_data["Filling Ratio"],
         mode="lines",
         name="Historical",
     )
