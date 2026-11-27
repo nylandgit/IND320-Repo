@@ -71,16 +71,15 @@ with left_column:
         (year_data["norway_zone"] == zones[0])
         & (year_data["neighbor_zone"] == zones[1])]
     
-    # Average the 15-minute MW readings within each hour before summing to MWh.
+    # Average absolute 15-minute MW readings within each hour before summing to MWh.
     hourly_flow = (
-        year_data.pivot_table(
-            index="timestamp",
-            columns="direction",
-            values="flow_mw",
-            aggfunc="mean",
+        year_data.assign(
+            hour=year_data["timestamp"].dt.floor("h"),
+            flow_mw=year_data["flow_mw"].abs(),
         )
-        .resample("1h")
+        .groupby(["direction", "hour"])["flow_mw"]
         .mean()
+        .groupby(level="direction")
         .sum()
     )
     pie_data = (
@@ -118,33 +117,47 @@ with left_column:
 with right_column:
     st.subheader(f"Flow between {zones[0]} and {zones[1]}")
 
-    latest_timestamp = df["timestamp"].max()
-    one_year_ago = latest_timestamp - pd.DateOffset(years=1)
+    months_2025 = (
+        pd.date_range("2025-01-01", "2025-12-01", freq="MS")
+        .strftime("%b %Y")
+        .tolist()
+    )
+    months_2026 = (
+        pd.date_range("2026-01-01", "2026-10-01", freq="MS")
+        .strftime("%b %Y")
+        .tolist()
+    )
+    line_start = pd.Timestamp("2025-01-01", tz="UTC")
+    line_end = pd.Timestamp("2026-11-01", tz="UTC")
     line_data = df[
-        (df["timestamp"] >= one_year_ago)
+        (df["timestamp"] >= line_start)
+        & (df["timestamp"] < line_end)
         & (df["norway_zone"] == zones[0])
         & (df["neighbor_zone"] == zones[1])
     ].sort_values("timestamp")
 
+    month_columns = st.columns(2)
+    with month_columns[0]:
+        selected_2025 = st.pills(
+            "2025",
+            options=months_2025,
+            selection_mode="multi",
+        )
+    with month_columns[1]:
+        selected_2026 = st.pills(
+            "2026",
+            options=months_2026,
+            default=months_2026[-1],
+            selection_mode="multi",
+        )
+    selected_months = (selected_2025 or []) + (selected_2026 or [])
+
     if line_data.empty:
-        st.info("No data is available for this connection in the most recent year.")
+        st.info("No data is available for this connection during 2025 or 2026.")
     else:
         line_data["timestamp"] = pd.to_datetime(line_data["timestamp"], utc=True)
         line_data["flow_mw"] = pd.to_numeric(line_data["flow_mw"])
         line_data = line_data.sort_values("timestamp")
-
-        months = (
-            line_data["timestamp"]
-            .dt.strftime("%b %Y")
-            .drop_duplicates()
-            .tolist()[::-1])
-
-        # Creating pills for selecting months. Default is most recent.
-        selected_months = st.pills(
-            "Select months",
-            options=months,
-            default=months[0],
-            selection_mode="multi",)
 
         # Formatting each month as label shown in Streamlit.
         if selected_months:
