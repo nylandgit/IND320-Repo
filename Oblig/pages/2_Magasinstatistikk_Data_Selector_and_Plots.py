@@ -6,7 +6,7 @@ import streamlit as st
 df = load_data()
 
 # Creating page title and csv load information.
-st.title("Data Plots")
+st.title("Magasinstatistikk Data Plots")
 st.write(f"Select data type and range to plot.")
 
 
