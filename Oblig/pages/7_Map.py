@@ -15,7 +15,9 @@ st.title("Map and selectors")
 AREA_TYPES = {"Price Areas (EL)": "EL", "Weather Areas": "Weather"}
 area_column, parameter_column = st.columns([3, 1])
 with area_column:
-    code = AREA_TYPES[st.radio("Area type", list(AREA_TYPES), horizontal=True)]
+    code = AREA_TYPES[
+        st.radio("Area type", list(AREA_TYPES), horizontal=True, key="map_area_type")
+    ]
 with parameter_column:
     st.selectbox("Weather Parameter", ["temperature", "precipitation"])
 
@@ -56,12 +58,6 @@ def show_map(gdf, values, title, label, code):
                 selected_el_area=name,
                 selected_area_number=area_number,
             )
-            if (
-                st.session_state["global_area_type"] != "EL"
-                or st.session_state["global_area_number"] != area_number
-            ):
-                st.session_state["pending_global_area_number"] = area_number
-                st.rerun()
         else:
             st.session_state["selected_weather_area"] = name
 

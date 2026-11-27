@@ -95,12 +95,17 @@ if "global_year_range" not in st.session_state:
 if "global_month_range" not in st.session_state:
     st.session_state["global_month_range"] = (1, 12)
 
-# Apply map selections before their widgets are instantiated.
-if "pending_global_area_number" in st.session_state:
-    st.session_state["global_area_type"] = "EL"
-    st.session_state["global_area_number"] = st.session_state.pop(
-        "pending_global_area_number"
-    )
+if (
+    st.session_state["selected_page"] == "map"
+    and st.session_state.get("map_area_type", "Price Areas (EL)") == "Price Areas (EL)"
+    and st.session_state["global_area_type"] != "NO"
+):
+    map_state = st.session_state.get("map_EL") or {}
+    points = map_state.get("selection", {}).get("points", [])
+    if points:
+        area_number = int(points[0]["location"][-1])
+        st.session_state["global_area_type"] = "EL"
+        st.session_state["global_area_number"] = area_number
 
 left, right = st.columns([1, 4], gap="medium")
 
