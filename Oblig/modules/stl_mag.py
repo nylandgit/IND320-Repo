@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import streamlit as st
+import plotly.graph_objects as go
 from statsmodels.tsa.seasonal import STL
 
 # Defining function w/ requested parameters and relevant defaults.
@@ -55,10 +56,23 @@ def plot_stl_decomposition(
     )
 
     for label in labels:
-        st.line_chart(
-            components,
-            x="Date",
-            y=label,
-            x_label="Date",
-            y_label=label,
+        if label == "Observed":
+            color = "#ff2b2b"
+        else:
+            color = None
+
+        fig = go.Figure(
+            go.Scatter(
+                x=components["Date"],
+                y=components[label],
+                mode="lines",
+                name=label,
+                line=dict(color=color) if color else None,
+            )
         )
+        fig.update_layout(
+            xaxis_title="Date",
+            yaxis_title=label,
+            template="plotly_white",
+        )
+        st.plotly_chart(fig, width="stretch")

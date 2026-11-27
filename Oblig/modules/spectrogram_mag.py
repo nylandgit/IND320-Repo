@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import plotly.graph_objects as go
 import streamlit as st
 from scipy.signal import spectrogram
 
@@ -41,39 +42,30 @@ def plot_spectrogram(
     # Converting power to decibels for easier plotting.
     power_db = 10 * np.log10(np.maximum(power, np.finfo(float).tiny))
 
-    # Plotting.
-    spectrogram_data = pd.DataFrame(
-        {
-            "Time": np.tile(times, len(frequencies)),
-            "Frequency": np.repeat(frequencies, len(times)),
-            "Power (dB)": power_db.ravel(),
-        }
+    # Plotting with a shared color scale so area changes are comparable.
+    fig = go.Figure(
+        go.Heatmap(
+            x=times,
+            y=frequencies,
+            z=power_db,
+            zmin=-130,
+            zmax=-10,
+            colorscale="Viridis",
+            colorbar={"title": "Power (dB)"},
+        )
     )
-
-    st.subheader(f"Spectrogram of Filling Ratio - {area_type} area {area_number}")
-    st.vega_lite_chart(
-        spectrogram_data,
-        {
-            "mark": {"type": "rect"},
-            "encoding": {
-                "x": {
-                    "field": "Time",
-                    "type": "ordinal",
-                    "sort": "ascending",
-                    "axis": {"title": "Time (years from start)"},
-                },
-                "y": {
-                    "field": "Frequency",
-                    "type": "ordinal",
-                    "sort": "ascending",
-                    "axis": {"title": "Frequency (cycles per year)"},
-                },
-                "color": {
-                    "field": "Power (dB)",
-                    "type": "quantitative",
-                    "legend": {"title": "Power (dB)"},
-                },
-            },
-        },
-        use_container_width=True,
+    fig.update_layout(
+        title=f"Spectrogram of Filling Ratio - {area_type} area {area_number}",
+        xaxis_title="Time (years from start)",
+        yaxis_title="Frequency (cycles per year)",
+        template="plotly_white",
+    )
+    st.plotly_chart(
+        fig,
+        width="stretch",
+        key=(
+            f"spectrogram-{area_type}-{area_number}-"
+            f"{data['Date'].min().strftime('%Y%m%d')}-"
+            f"{data['Date'].max().strftime('%Y%m%d')}"
+        ),
     )

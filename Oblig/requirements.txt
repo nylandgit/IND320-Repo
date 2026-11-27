@@ -2,9 +2,16 @@ streamlit
 pandas
 numpy
 matplotlib
+plotly
+requests
 openmeteo-requests
 requests-cache
 retry-requests
 geopandas
 scipy
 scikit-learn
+river
+pyjstat
+pymongo
+statsmodels
+entsoe-py

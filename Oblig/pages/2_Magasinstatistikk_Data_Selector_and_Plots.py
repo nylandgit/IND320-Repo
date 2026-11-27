@@ -6,8 +6,7 @@ import streamlit as st
 df = load_data()
 
 # Creating page title and csv load information.
-st.title("Data Plots")
-st.write(f"Select data type and range to plot.")
+st.title("Magasinstatistikk Data Plots")
 
 
 
@@ -22,23 +21,9 @@ columns_to_plot = [
     "Change FR",
 ]
 
-# Taking user input to decide which area type is to be plotted.
-plot_area_type = st.radio(
-    "Select area type",
-    options=["EL", "NO", "VASS"])
-
-# Selecting offered area numbers based on user input for area type.
-if plot_area_type == "EL":
-    area_number_options = list(range(1, 6))
-elif plot_area_type == "NO":
-    area_number_options = [0]
-else:
-    area_number_options = list(range(1, 4))
-
-# Taking user input to decide which area number is to be plotted.
-plot_area_number = st.selectbox(
-    "Select area number",
-    options=area_number_options)
+# Using the persisted global area selection.
+plot_area_type = st.session_state["global_area_type"]
+plot_area_number = st.session_state["global_area_number"]
 
 # Selecting data from df matching specified area type and number.
 # Plotting all data in chart will lead to overlapping dates, as
@@ -46,63 +31,34 @@ plot_area_number = st.selectbox(
 plot_data = df[
     (df["Area Type"] == plot_area_type)
     & (df["Area Number"] == plot_area_number)
-    ][["Date", *columns_to_plot]].set_index("Date")
+][["Date", *columns_to_plot]].set_index("Date").sort_index()
+plot_data["FR Last Week"] = plot_data["Filling Ratio"].shift(1)
 
 
 
 # --- Selection Slider ---
 
-# Preparing selectable months for selection slider using list:
-# * plot_data.index selects the index values (Date) for each column
-#   in plot_data. These dates are already sorted chronologically.
-# * .to_period("M") converts the dates into monthly periods.
-# * .unique() makes the months show up only once in the slider.
-# * .tolist() makes available_months a Python list. We now have a de-
-#    duplicated, ordered list of available months for our slider.
-available_months = plot_data.index.to_period("M").unique().tolist()
-
-# Creating selection slider for selecting specific subsets of months,
-# using ready-made available_months list.
-default_start_month = pd.Period("2024-01", freq="M")
-default_end_month = pd.Period("2024-06", freq="M")
-
-if default_start_month not in available_months:
-    default_start_month = available_months[0]
-if default_end_month not in available_months:
-    default_end_month = available_months[-1]
-
-if "data_plots_month_range" not in st.session_state:
-    st.session_state["data_plots_month_range"] = (
-        default_start_month,
-        default_end_month,
+selected_year_start, selected_year_end = st.session_state["global_year_range"]
+selected_month_start, selected_month_end = st.session_state["global_month_range"]
+plot_dates = plot_data.index
+selected_data = plot_data.loc[
+    (plot_dates.year >= selected_year_start)
+    & (plot_dates.year <= selected_year_end)
+    & (plot_dates.month >= selected_month_start)
+    & (plot_dates.month <= selected_month_end)
+]
+if selected_data.empty:
+    start_month = pd.Period(
+        f"{selected_year_start}-{selected_month_start:02d}", freq="M"
     )
-
-saved_start_month, saved_end_month = st.session_state["data_plots_month_range"]
-if saved_start_month not in available_months:
-    saved_start_month = default_start_month
-if saved_end_month not in available_months:
-    saved_end_month = default_end_month
-
-start_month, end_month = st.select_slider(
-    "Select months",
-    options=available_months,
-    value=(saved_start_month, saved_end_month),
-    key="data_plots_month_range",
-    format_func=str,
-)
-
-# Saving selection to session state for later use on other pages.
+    end_month = pd.Period(
+        f"{selected_year_end}-{selected_month_end:02d}", freq="M"
+    )
+else:
+    start_month = selected_data.index.min().to_period("M")
+    end_month = selected_data.index.max().to_period("M")
 st.session_state["selected_start_month"] = str(start_month)
 st.session_state["selected_end_month"] = str(end_month)
-
-# Creating pandas object for plotting monthly data in figures. Some
-# months in the CSV have more observations than others.
-plot_months = plot_data.index.to_period("M")
-
-# Selecting months from plot_months based on selection slider input.
-selected_data = plot_data.loc[
-    (plot_months >= start_month) & (plot_months <= end_month)
-]
 
 
 
@@ -131,7 +87,9 @@ st.session_state["selected_column"] = (
     selected_column if selected_column != "All columns" else "Filling Ratio"
 )
 
-
+if selected_data.empty:
+    st.warning("No reservoir observations match the selected global date range.")
+    st.stop()
 
 # --- Plotting ---
 
@@ -141,9 +99,13 @@ st.write(
     f"from {selected_data.index.min().date()} to {selected_data.index.max().date()}."
 )
 st.subheader("Reservoir metrics over time")
+chart_data = selected_data.copy()
+chart_columns = [column for column in selected_columns if column != "Filling Ratio"]
+if "Filling Ratio" in selected_columns:
+    chart_columns.append("Filling Ratio")
 st.line_chart(
-    selected_data,
-    y=selected_columns,
+    chart_data,
+    y=chart_columns,
     x_label="Date",
     y_label="Metric value",
 )

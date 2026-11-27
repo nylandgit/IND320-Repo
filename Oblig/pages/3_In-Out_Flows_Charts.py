@@ -5,8 +5,6 @@ from modules.mongoDBconnection import load_flow_data
 st.title("In/Out Flows")
 
 df = load_flow_data()
-
-# Converting API data columns to pandas datetime and numberic objects.
 df["timestamp"] = pd.to_datetime(df["timestamp"], utc=True)
 df["flow_mw"] = pd.to_numeric(df["flow_mw"])
 
@@ -22,6 +20,11 @@ brz_pairings = {
 }
 
 
+def update_selected_connection(widget_key, other_widget_key):
+    st.session_state["flow_selected_connection"] = st.session_state[widget_key]
+    st.session_state[other_widget_key] = None
+
+
 # --- LEFT COLUMN ---
 
 with left_column:
@@ -32,26 +35,58 @@ with left_column:
         for norway_zone, neighbor_zones in brz_pairings.items()
         for neighbor_zone in neighbor_zones]
 
-    # Creating radio buttons to let user select plotting connection.
-    selected_connection = st.radio("Select connection", options=connections)
+    st.session_state.setdefault("flow_connection_left", connections[0])
+    st.session_state.setdefault("flow_connection_right", None)
+    st.session_state.setdefault("flow_selected_connection", connections[0])
+
+    # Split the single connection selection across two columns.
+    radio_columns = st.columns(2)
+    with radio_columns[0]:
+        st.radio(
+            "Select connection",
+            options=connections[::2],
+            key="flow_connection_left",
+            on_change=update_selected_connection,
+            args=("flow_connection_left", "flow_connection_right"),
+        )
+    with radio_columns[1]:
+        st.radio(
+            " ",
+            options=connections[1::2],
+            key="flow_connection_right",
+            on_change=update_selected_connection,
+            args=("flow_connection_right", "flow_connection_left"),
+            label_visibility="collapsed",
+        )
+
+    selected_connection = st.session_state["flow_selected_connection"]
     zones = selected_connection.split(" ↔ ")
     st.subheader(f"Flow in and out on the {zones[0]}–{zones[1]} connection")
 
     # Creating selection box to take user input for year.
     selected_year = st.selectbox("Select year", options=[2025, 2026])
-    year_data = df[df["timestamp"].dt.year == selected_year]
 
-    # Selecting data based on zones and user-inputted year.
+    year_data = df[df["timestamp"].dt.year == selected_year]
     year_data = year_data[
         (year_data["norway_zone"] == zones[0])
         & (year_data["neighbor_zone"] == zones[1])]
     
-    pie_data = (
-        year_data.groupby("direction")["flow_mw"]
+    # Average absolute 15-minute MW readings within each hour before summing to MWh.
+    hourly_flow = (
+        year_data.assign(
+            hour=year_data["timestamp"].dt.floor("h"),
+            flow_mw=year_data["flow_mw"].abs(),
+        )
+        .groupby(["direction", "hour"])["flow_mw"]
+        .mean()
+        .groupby(level="direction")
         .sum()
+    )
+    pie_data = (
+        hourly_flow
         .reindex(["in", "out"], fill_value=0)
         .rename_axis("Direction")
-        .reset_index(name="Flow (MW)")
+        .reset_index(name="Flow (MWh)")
         .replace({"Direction": {"in": f"In: {zones[1]} to {zones[0]}", "out": f"Out: {zones[0]} to {zones[1]}"}}))
 
     # Plotting using built-in Streamlit functions.
@@ -60,7 +95,7 @@ with left_column:
         {
             "mark": {"type": "arc", "outerRadius": 120},
             "encoding": {
-                "theta": {"field": "Flow (MW)", "type": "quantitative"},
+                "theta": {"field": "Flow (MWh)", "type": "quantitative"},
                 "color": {
                     "field": "Direction",
                     "type": "nominal",
@@ -68,7 +103,7 @@ with left_column:
                 },
                 "tooltip": [
                     {"field": "Direction", "type": "nominal"},
-                    {"field": "Flow (MW)", "type": "quantitative"},
+                    {"field": "Flow (MWh)", "type": "quantitative"},
                 ],
             },
         },
@@ -82,33 +117,47 @@ with left_column:
 with right_column:
     st.subheader(f"Flow between {zones[0]} and {zones[1]}")
 
-    # Defining time period for data (last year).
-    latest_timestamp = df["timestamp"].max()
-    one_year_ago = latest_timestamp - pd.DateOffset(years=1)
-
-    # Selecting data for plotting based on time period and connection.
+    months_2025 = (
+        pd.date_range("2025-01-01", "2025-12-01", freq="MS")
+        .strftime("%b %Y")
+        .tolist()
+    )
+    months_2026 = (
+        pd.date_range("2026-01-01", "2026-10-01", freq="MS")
+        .strftime("%b %Y")
+        .tolist()
+    )
+    line_start = pd.Timestamp("2025-01-01", tz="UTC")
+    line_end = pd.Timestamp("2026-11-01", tz="UTC")
     line_data = df[
-        (df["timestamp"] >= one_year_ago)
+        (df["timestamp"] >= line_start)
+        & (df["timestamp"] < line_end)
         & (df["norway_zone"] == zones[0])
         & (df["neighbor_zone"] == zones[1])
     ].sort_values("timestamp")
 
-    # Defining months the user can select.
-    if line_data.empty:
-        st.info("No data is available for this connection in the most recent year.")
-    else:
-        months = (
-            line_data["timestamp"]
-            .dt.strftime("%b %Y")
-            .drop_duplicates()
-            .tolist()[::-1])
+    month_columns = st.columns(2)
+    with month_columns[0]:
+        selected_2025 = st.pills(
+            "2025",
+            options=months_2025,
+            selection_mode="multi",
+        )
+    with month_columns[1]:
+        selected_2026 = st.pills(
+            "2026",
+            options=months_2026,
+            default=months_2026[-1],
+            selection_mode="multi",
+        )
+    selected_months = (selected_2025 or []) + (selected_2026 or [])
 
-        # Creating pills for selecting months. Default is most recent.
-        selected_months = st.pills(
-            "Select months",
-            options=months,
-            default=months[0],
-            selection_mode="multi",)
+    if line_data.empty:
+        st.info("No data is available for this connection during 2025 or 2026.")
+    else:
+        line_data["timestamp"] = pd.to_datetime(line_data["timestamp"], utc=True)
+        line_data["flow_mw"] = pd.to_numeric(line_data["flow_mw"])
+        line_data = line_data.sort_values("timestamp")
 
         # Formatting each month as label shown in Streamlit.
         if selected_months:
@@ -145,9 +194,10 @@ with right_column:
 with st.expander("About this data"):
     st.write(
         """
-        The charts use ENTSO-E flow data stored in the project's MongoDB Atlas          
-        database. The pie chart sums flow by Norwegian zone for the selected
-        year. The line chart shows incoming and outgoing flow between NO_4 and
-        SE_1 for the selected months in the most recent year of available data.
+        The charts use ENTSO-E flow data stored in the project's MongoDB Atlas
+        database. The pie chart shows hourly-average flow summed by direction
+        for the selected connection and year. The line chart shows incoming
+        and outgoing flow for the selected months in the most recent year of
+        available data.
         """
         )
