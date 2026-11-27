@@ -67,6 +67,7 @@ pages = [
     st.Page("pages/6_Meteorological_Analysis.py", title="Meteorological Analysis"),
     st.Page("pages/7_Map.py", title="Map"),
     st.Page("pages/8_Forecast.py", title="Forecast"),
+    st.Page("pages/9_Correlation_Analysis.py", title="Correlation Analysis"),
 ]
 
 page = st.navigation(pages)
