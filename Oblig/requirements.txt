@@ -9,3 +9,4 @@ retry-requests
 geopandas
 scipy
 scikit-learn
+river
