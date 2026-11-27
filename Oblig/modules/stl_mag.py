@@ -55,10 +55,12 @@ def plot_stl_decomposition(
     )
 
     for label in labels:
-        st.line_chart(
-            components,
-            x="Date",
-            y=label,
-            x_label="Date",
-            y_label=label,
-        )
+        chart_kwargs = {
+            "x": "Date",
+            "y": label,
+            "x_label": "Date",
+            "y_label": label,
+        }
+        if label == "Observed":
+            chart_kwargs["color"] = "#ff2b2b"
+        st.line_chart(components, **chart_kwargs)
