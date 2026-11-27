@@ -38,41 +38,27 @@ plot_data = df[
 
 # --- Selection Slider ---
 
-# Preparing selectable months from the global year and month ranges.
-# * plot_data.index selects the index values (Date) for each column
-#   in plot_data. These dates are already sorted chronologically.
-# * .to_period("M") converts the dates into monthly periods.
-# * .unique() makes the months show up only once in the slider.
-# * .tolist() makes available_months a Python list. We now have a de-
-#    duplicated, ordered list of available months for our slider.
-available_months = plot_data.index.to_period("M").unique().tolist()
 selected_year_start, selected_year_end = st.session_state["global_year_range"]
 selected_month_start, selected_month_end = st.session_state["global_month_range"]
-
-available_months = [
-    month for month in available_months
-    if selected_year_start <= month.year <= selected_year_end
-    and selected_month_start <= month.month <= selected_month_end
+plot_dates = plot_data.index
+selected_data = plot_data.loc[
+    (plot_dates.year >= selected_year_start)
+    & (plot_dates.year <= selected_year_end)
+    & (plot_dates.month >= selected_month_start)
+    & (plot_dates.month <= selected_month_end)
 ]
-if not available_months:
-    st.warning("No reservoir observations match the selected global date range.")
-    st.stop()
-
-start_month = available_months[0]
-end_month = available_months[-1]
-
-# Saving selection to session state for later use on other pages.
+if selected_data.empty:
+    start_month = pd.Period(
+        f"{selected_year_start}-{selected_month_start:02d}", freq="M"
+    )
+    end_month = pd.Period(
+        f"{selected_year_end}-{selected_month_end:02d}", freq="M"
+    )
+else:
+    start_month = selected_data.index.min().to_period("M")
+    end_month = selected_data.index.max().to_period("M")
 st.session_state["selected_start_month"] = str(start_month)
 st.session_state["selected_end_month"] = str(end_month)
-
-# Creating pandas object for plotting monthly data in figures. Some
-# months in the CSV have more observations than others.
-plot_months = plot_data.index.to_period("M")
-
-# Selecting months from plot_months based on selection slider input.
-selected_data = plot_data.loc[
-    (plot_months >= start_month) & (plot_months <= end_month)
-]
 
 
 
@@ -101,7 +87,9 @@ st.session_state["selected_column"] = (
     selected_column if selected_column != "All columns" else "Filling Ratio"
 )
 
-
+if selected_data.empty:
+    st.warning("No reservoir observations match the selected global date range.")
+    st.stop()
 
 # --- Plotting ---
 
