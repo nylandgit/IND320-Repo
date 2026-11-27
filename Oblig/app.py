@@ -21,17 +21,17 @@ st.markdown(
     [data-testid="column"]:first-child {
         max-width: 330px;
     }
-    [data-testid="stVerticalBlockBorderWrapper"] {
-        border-radius: 18px;
+    .st-key-page-selector button {
+        border-radius: 12px;
+        min-height: 52px;
+        font-weight: 600;
     }
-    div[data-testid="stKey-page-selector"] {
-        min-height: 58px;
-        max-height: 58px;
-        overflow: hidden;
-        transition: max-height 0.25s ease;
-    }
-    div[data-testid="stKey-page-selector"]:hover {
-        max-height: 520px;
+    [data-testid="stPopoverBody"] {
+        width: min(340px, 70vw);
+        max-height: calc(100vh - 130px);
+        overflow-y: auto;
+        z-index: 1000;
+        translate: min(300px, 25vw) -80px;
     }
     </style>
     """,
@@ -90,19 +90,25 @@ if "global_month_range" not in st.session_state:
 left, right = st.columns([1, 4], gap="medium")
 
 with left:
-    with st.container(border=True, key="page-selector"):
-        st.markdown("### Page Selector")
-        for label, page_key, path in PAGES:
-            if label == "separator":
-                st.markdown("---")
-                continue
-            if st.button(
-                label,
-                key=f"nav_{page_key}",
-                use_container_width=True,
-                type="primary" if st.session_state["selected_page"] == page_key else "secondary",
-            ):
-                st.session_state["selected_page"] = page_key
+    with st.container(key="page-selector"):
+        with st.popover(
+            "Page Selector",
+            icon=":material/menu:",
+            use_container_width=True,
+            key="page-menu",
+        ):
+            st.markdown("### Pages")
+            for label, page_key, path in PAGES:
+                if label == "separator":
+                    st.markdown("---")
+                    continue
+                if st.button(
+                    label,
+                    key=f"nav_{page_key}",
+                    use_container_width=True,
+                    type="primary" if st.session_state["selected_page"] == page_key else "secondary",
+                ):
+                    st.session_state["selected_page"] = page_key
 
     with st.container(border=True):
         st.markdown("### Global User Input")
@@ -126,7 +132,6 @@ with left:
             st.selectbox(
                 "Area number",
                 options=area_options,
-                index=area_options.index(current_area_number),
                 key="global_area_number",
             )
 
