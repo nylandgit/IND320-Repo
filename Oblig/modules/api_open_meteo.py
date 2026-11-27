@@ -11,9 +11,17 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 # Setting up Open-Meteo API client with cache and retry on error.
 cache_session = requests_cache.CachedSession(
-    str(DATA_DIR / ".cache"), expire_after=-1
+    str(DATA_DIR / ".cache"),
+    expire_after=-1,
+    cache_control=False,
+    allowable_methods=("GET",),
+    stale_if_error=True,
 )
-retry_session = retry(cache_session, retries=5, backoff_factor=0.2)
+retry_session = retry(
+    cache_session,
+    retries=5,
+    backoff_factor=1.0,
+)
 openmeteo = openmeteo_requests.Client(session=retry_session)
 
 # Defining function with input parameters as instructed and needed.

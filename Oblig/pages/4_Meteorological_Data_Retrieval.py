@@ -45,7 +45,17 @@ if period_too_long:
         "Adjust the year range in the Global User Input block."
     )
 
-if st.button("Initiate data retrieval", disabled=period_too_long):
+download_is_cached = (
+    st.session_state.get("meteorological_selection") == selection
+)
+
+if download_is_cached:
+    st.caption("This selection is already stored in the current session.")
+
+if st.button(
+    "Initiate data retrieval",
+    disabled=period_too_long or download_is_cached,
+):
     with st.status("Retrieving meteorological data...", expanded=True) as status:
         locations_by_region_el = sample_areas_el(n=500)
         weather_data = download_region(
