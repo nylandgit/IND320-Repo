@@ -192,7 +192,7 @@ if forecast is not None:
             y=forecast["Forecast"],
             mode="lines+markers",
             name="Forecast",
-            line=dict(color="#ff2b2b"),
+            line=dict(color="#ff4b4b"),
         )
     )
 fig.update_layout(
