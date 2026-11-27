@@ -101,10 +101,15 @@ if (
 ):
     map_state = st.session_state.get("map_EL") or {}
     points = map_state.get("selection", {}).get("points", [])
-    if points:
-        area_number = int(points[0]["location"][-1])
+    selected_map_area = points[0]["location"] if points else None
+    previous_map_area = st.session_state.setdefault(
+        "_last_map_el_selection", selected_map_area
+    )
+    if selected_map_area and selected_map_area != previous_map_area:
+        area_number = int(selected_map_area[-1])
         st.session_state["global_area_type"] = "EL"
         st.session_state["global_area_number"] = area_number
+    st.session_state["_last_map_el_selection"] = selected_map_area
 
 left, right = st.columns([1, 4], gap="medium")
 

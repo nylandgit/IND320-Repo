@@ -80,7 +80,9 @@ def show_map(gdf, values, title, label, code):
         )
     )
 
-    if st.session_state.get("selected_map_area_type") == code:
+    if code == "EL" and st.session_state["global_area_type"] == "NO":
+        chosen = gdf
+    elif st.session_state.get("selected_map_area_type") == code:
         chosen = gdf[gdf["map_name"] == st.session_state.get("selected_map_area")]
     else:
         chosen = gdf.iloc[0:0]
