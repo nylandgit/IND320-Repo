@@ -98,7 +98,6 @@ if "global_month_range" not in st.session_state:
 if (
     st.session_state["selected_page"] == "map"
     and st.session_state.get("map_area_type", "Price Areas (EL)") == "Price Areas (EL)"
-    and st.session_state["global_area_type"] != "NO"
 ):
     map_state = st.session_state.get("map_EL") or {}
     points = map_state.get("selection", {}).get("points", [])
