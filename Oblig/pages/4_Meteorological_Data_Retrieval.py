@@ -37,10 +37,17 @@ include_elevation = st.checkbox(
 )
 selection = (region, start_date, end_date, include_elevation)
 global_selection = (area_type, area_number, start_year, end_year)
+period_too_long = end_year - start_year + 1 > 2
+if period_too_long:
+    st.warning(
+        "Weather data downloads are limited to a maximum of two years "
+        "due to API restrictions."
+        "Adjust the year range in the Global User Input block."
+    )
 
-if st.button("Initiate data retrieval"):
+if st.button("Initiate data retrieval", disabled=period_too_long):
     with st.status("Retrieving meteorological data...", expanded=True) as status:
-        locations_by_region_el = sample_areas_el()
+        locations_by_region_el = sample_areas_el(n=500)
         weather_data = download_region(
             region=region,
             start_date=start_date,
