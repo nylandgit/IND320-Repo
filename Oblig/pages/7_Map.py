@@ -45,7 +45,9 @@ def show_map(gdf, values, title, label, code):
     # so the outline changes immediately.
     state = st.session_state.get(key) or {}
     points = state.get("selection", {}).get("points", [])
-    if points:
+    if points and not (
+        code == "EL" and st.session_state["global_area_type"] == "NO"
+    ):
         name = points[0]["location"]
         st.session_state.update(selected_map_area=name, selected_map_area_type=code)
         if code == "EL":
@@ -84,19 +86,23 @@ def show_map(gdf, values, title, label, code):
         )
     )
 
-    if st.session_state.get("selected_map_area_type") == code:
+    if code == "EL" and st.session_state["global_area_type"] == "NO":
+        chosen = gdf
+    elif st.session_state.get("selected_map_area_type") == code:
         chosen = gdf[gdf["map_name"] == st.session_state.get("selected_map_area")]
-        if not chosen.empty:
-            fig.add_trace(
-                layer(
-                    chosen,
-                    z=[0] * len(chosen),
-                    colorscale=[[0, "rgba(255,75,75,0.12)"], [1, "rgba(255,75,75,0.12)"]],
-                    showscale=False,
-                    marker={"line": {"color": RED, "width": 5}},
-                    hoverinfo="skip",
-                )
+    else:
+        chosen = gdf.iloc[0:0]
+    if not chosen.empty:
+        fig.add_trace(
+            layer(
+                chosen,
+                z=[0] * len(chosen),
+                colorscale=[[0, "rgba(255,75,75,0.12)"], [1, "rgba(255,75,75,0.12)"]],
+                showscale=False,
+                marker={"line": {"color": RED, "width": 5}},
+                hoverinfo="skip",
             )
+        )
 
     fig.update_geos(fitbounds="locations", visible=False, showcountries=True, countrycolor="#777777")
     if code == "Weather":
