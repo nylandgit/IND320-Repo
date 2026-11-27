@@ -99,8 +99,15 @@ st.write(
     f"from {selected_data.index.min().date()} to {selected_data.index.max().date()}."
 )
 st.subheader("Reservoir metrics over time")
+chart_data = selected_data.copy()
+if "FR Last Week" in selected_columns:
+    last_week = chart_data.pop("FR Last Week")
+    last_week.index -= pd.Timedelta(weeks=1)
+    chart_data = chart_data.join(
+        last_week.rename("FR Last Week"), how="outer"
+    ).sort_index()
 st.line_chart(
-    selected_data,
+    chart_data,
     y=selected_columns,
     x_label="Date",
     y_label="Metric value",
