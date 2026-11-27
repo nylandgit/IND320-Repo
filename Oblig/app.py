@@ -15,11 +15,11 @@ st.markdown(
     [data-testid="stSidebar"] { display: none; }
     [data-testid="stHeader"] { height: 0; }
     [data-testid="stToolbar"] { visibility: hidden; }
-    [data-testid="block-container"] {
+    [data-testid="stAppViewBlockContainer"] {
         max-width: 100%;
-        padding-top: 1rem;
-        padding-left: 1rem;
-        padding-right: 1rem;
+        padding-top: 3rem;
+        padding-left: 5rem;
+        padding-right: 5rem;
     }
     [data-testid="column"]:first-child {
         max-width: 330px;
