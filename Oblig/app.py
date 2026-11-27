@@ -80,6 +80,11 @@ PAGES = [
 if "selected_page" not in st.session_state:
     st.session_state["selected_page"] = "home"
 
+
+def select_page(page_key):
+    st.session_state["selected_page"] = page_key
+
+
 # Initialize global inputs once. Widget keys preserve values across page flips.
 if "global_area_type" not in st.session_state:
     st.session_state["global_area_type"] = "EL"
@@ -112,13 +117,14 @@ with left:
                 if label == "separator":
                     st.markdown("---")
                     continue
-                if st.button(
+                st.button(
                     label,
                     key=f"nav_{page_key}",
                     use_container_width=True,
                     type="primary" if st.session_state["selected_page"] == page_key else "secondary",
-                ):
-                    st.session_state["selected_page"] = page_key
+                    on_click=select_page,
+                    args=(page_key,),
+                )
 
     with st.container(border=True):
         st.markdown("### Global User Input")
