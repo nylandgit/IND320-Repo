@@ -211,7 +211,7 @@ except ValueError as error:
     st.stop()
 
 most_recent_date = area_data["Date"].max()
-plot_start = most_recent_date - pd.DateOffset(years=1)
+plot_start = most_recent_date - pd.DateOffset(years=2)
 plot_data = area_data.loc[area_data["Date"] >= plot_start]
 
 fig = go.Figure()
