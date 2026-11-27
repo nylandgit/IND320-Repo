@@ -24,41 +24,29 @@ selected_data = df[
 # Splitting page into left and right columns.
 left_tab, right_tab = st.tabs(["STL Analysis", "Spectrogram"])
 
-# --- Left Column
+# --- Left Tab
 
 with left_tab:
-    if selected_data.empty:
-        st.warning(
-            f"No reservoir observations match {area_type} area {area_number} "
-            "and the selected global date range."
-        )
+    filling_ratio = selected_data["Filling Ratio"].dropna()
+    if filling_ratio.shape[0] < 104:
+        st.warning("Select at least 104 weekly observations for STL analysis.")
     else:
-        filling_ratio = selected_data["Filling Ratio"].dropna()
-        if filling_ratio.shape[0] < 104:
-            st.warning("Select at least 104 weekly observations for STL analysis.")
-        else:
-            plot_stl_decomposition(
-                selected_data,
-                area_type,
-                area_number,
-                "Filling Ratio",
-            )
+        plot_stl_decomposition(
+            selected_data,
+            area_type,
+            area_number,
+            "Filling Ratio",
+        )
 
 
-# --- Right Column
+# --- Right Tab
 
 with right_tab:
-    if selected_data.empty:
-        st.warning(
-            f"No reservoir observations match {area_type} area {area_number} "
-            "and the selected global date range."
-        )
+    if selected_data["Filling Ratio"].dropna().shape[0] < 52:
+        st.warning("Select at least 52 weekly observations for the spectrogram.")
     else:
-        if selected_data["Filling Ratio"].dropna().shape[0] < 52:
-            st.warning("Select at least 52 weekly observations for the spectrogram.")
-        else:
-            plot_spectrogram(
-                selected_data,
-                area_type,
-                area_number,
-            )
+        plot_spectrogram(
+            selected_data,
+            area_type,
+            area_number,
+        )

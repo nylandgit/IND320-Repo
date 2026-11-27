@@ -76,4 +76,9 @@ def plot_spectrogram(
             },
         },
         use_container_width=True,
+        key=(
+            f"spectrogram-{area_type}-{area_number}-"
+            f"{data['Date'].min().strftime('%Y%m%d')}-"
+            f"{data['Date'].max().strftime('%Y%m%d')}"
+        ),
     )

@@ -47,7 +47,7 @@ def plot_stl_decomposition(
             "Residual": np.asarray(result.resid),
         })
 
-    labels = ["Observed", "Trend", "Seasonal", "Residual"]
+    labels = ["Observed Filling Ratio", "Trend", "Seasonal", "Residual"]
 
     st.subheader(
         f"STL decomposition of {selected_column} - "
