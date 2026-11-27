@@ -32,7 +32,8 @@ plot_area_number = st.session_state["global_area_number"]
 plot_data = df[
     (df["Area Type"] == plot_area_type)
     & (df["Area Number"] == plot_area_number)
-    ][["Date", *columns_to_plot]].set_index("Date")
+][["Date", *columns_to_plot]].set_index("Date").sort_index()
+plot_data["FR Last Week"] = plot_data["Filling Ratio"].shift(1)
 
 
 
@@ -100,12 +101,6 @@ st.write(
 )
 st.subheader("Reservoir metrics over time")
 chart_data = selected_data.copy()
-if "FR Last Week" in selected_columns:
-    last_week = chart_data.pop("FR Last Week")
-    last_week.index -= pd.Timedelta(weeks=1)
-    chart_data = chart_data.join(
-        last_week.rename("FR Last Week"), how="outer"
-    ).sort_index()
 st.line_chart(
     chart_data,
     y=selected_columns,
