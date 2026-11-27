@@ -52,14 +52,9 @@ def home():
         "Explore Norwegian reservoir statistics, cross-border electricity flows, "
         "meteorological data, and time-series analysis."
     )
-    st.subheader("Quick start")
-    st.markdown(
-        """
-        1. Open **Magasinstatistikk Data Plots**.
-        2. Choose the global area type, area number, year range, and month range.
-        3. Open **Meteorological Data Retrieval** and retrieve data for the selected range.
-        4. Explore **STL Analysis and Spectrogram** and **Meteorological Analysis**.
-        """
+    st.write(
+        "Use the page selector to view maps and forecasts, analyze reservoir and "
+        "cross-border data, retrieve weather observations, or explore correlations."
     )
 
 
