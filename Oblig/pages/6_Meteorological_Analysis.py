@@ -27,7 +27,7 @@ if (
     st.stop()
 
 weather_data = st.session_state["meteorological_data"]
-region, start_date, end_date = st.session_state["meteorological_selection"]
+region, start_date, end_date = st.session_state["meteorological_selection"][:3]
 st.caption(f"Showing {region}, {start_date} to {end_date}")
 
 for key, value in SATV_DEFAULTS.items():
