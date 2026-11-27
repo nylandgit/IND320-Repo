@@ -1,8 +1,12 @@
 import pandas as pd
 import streamlit as st
-from modules.mongoDBconnection import load_flow_data, load_latest_flow_timestamp
+from modules.mongoDBconnection import load_flow_data
 
 st.title("In/Out Flows")
+
+df = load_flow_data()
+df["timestamp"] = pd.to_datetime(df["timestamp"], utc=True)
+df["flow_mw"] = pd.to_numeric(df["flow_mw"])
 
 # Splitting page into left and right columns.
 left_column, right_column = st.columns(2)
@@ -62,18 +66,10 @@ with left_column:
     # Creating selection box to take user input for year.
     selected_year = st.selectbox("Select year", options=[2025, 2026])
 
-    # Retrieve only the selected connection and year from MongoDB.
-    year_start = pd.Timestamp(year=selected_year, month=1, day=1, tz="UTC")
-    next_year_start = pd.Timestamp(year=selected_year + 1, month=1, day=1, tz="UTC")
-    year_data = load_flow_data(
-        {
-            "norway_zone": zones[0],
-            "neighbor_zone": zones[1],
-            "timestamp": {"$gte": year_start.to_pydatetime(), "$lt": next_year_start.to_pydatetime()},
-        }
-    )
-    year_data["timestamp"] = pd.to_datetime(year_data["timestamp"], utc=True)
-    year_data["flow_mw"] = pd.to_numeric(year_data["flow_mw"])
+    year_data = df[df["timestamp"].dt.year == selected_year]
+    year_data = year_data[
+        (year_data["norway_zone"] == zones[0])
+        & (year_data["neighbor_zone"] == zones[1])]
     
     # Average the 15-minute MW readings within each hour before summing to MWh.
     hourly_flow = (
@@ -122,21 +118,13 @@ with left_column:
 with right_column:
     st.subheader(f"Flow between {zones[0]} and {zones[1]}")
 
-    latest_timestamp = load_latest_flow_timestamp(zones[0], zones[1])
-    if latest_timestamp is not None:
-        one_year_ago = latest_timestamp - pd.DateOffset(years=1)
-        line_data = load_flow_data(
-            {
-                "norway_zone": zones[0],
-                "neighbor_zone": zones[1],
-                "timestamp": {
-                    "$gte": one_year_ago.to_pydatetime(),
-                    "$lte": latest_timestamp.to_pydatetime(),
-                },
-            }
-        )
-    else:
-        line_data = pd.DataFrame()
+    latest_timestamp = df["timestamp"].max()
+    one_year_ago = latest_timestamp - pd.DateOffset(years=1)
+    line_data = df[
+        (df["timestamp"] >= one_year_ago)
+        & (df["norway_zone"] == zones[0])
+        & (df["neighbor_zone"] == zones[1])
+    ].sort_values("timestamp")
 
     if line_data.empty:
         st.info("No data is available for this connection in the most recent year.")
