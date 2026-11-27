@@ -41,7 +41,7 @@ period_too_long = end_year - start_year + 1 > 2
 if period_too_long:
     st.warning(
         "Weather data downloads are limited to a maximum of two years "
-        "due to API restrictions."
+        "due to API restrictions. "
         "Adjust the year range in the Global User Input block."
     )
 
