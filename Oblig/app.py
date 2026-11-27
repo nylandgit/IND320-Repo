@@ -176,6 +176,33 @@ with left:
                        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
         st.caption(f"{month_names[month_start - 1]} - {month_names[month_end - 1]}")
 
+        downloaded_selection = st.session_state.get(
+            "meteorological_global_selection"
+        )
+        if downloaded_selection:
+            (
+                downloaded_area_type,
+                downloaded_area_number,
+                downloaded_start_year,
+                downloaded_end_year,
+            ) = downloaded_selection
+            current_selection = (
+                area_type,
+                st.session_state["global_area_number"],
+                *st.session_state["global_year_range"],
+            )
+            if downloaded_selection == current_selection:
+                st.success("✓ Selected area and years match downloaded weather data.")
+            else:
+                st.warning(
+                    "✗ Selected inputs do not match downloaded weather data. "
+                    f"Downloaded weather data for {downloaded_area_type} "
+                    f"{downloaded_area_number} {downloaded_start_year}-"
+                    f"{downloaded_end_year}."
+                )
+        else:
+            st.caption("Weather data has not been downloaded yet.")
+
         # Downstream pages use these aliases for compatibility.
         st.session_state["plot_area_type"] = area_type
         st.session_state["plot_area_number"] = st.session_state["global_area_number"]

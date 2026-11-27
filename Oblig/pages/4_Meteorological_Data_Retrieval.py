@@ -1,4 +1,3 @@
-import pandas as pd
 import streamlit as st
 from modules.api_open_meteo import download_region
 from modules.sampling_areas_el import sample_areas_el
@@ -6,45 +5,39 @@ from modules.sampling_areas_el import sample_areas_el
 st.title("Meteorological Data Retrieval")
 st.write(
     """
-    Downloads meteorological data relevant for user-selected range of
-    Magasinstatistikk data.
+    Downloads meteorological data for the area and year range selected in
+    the Global User Input block.
     """)
 
-# Defining required user input for data retrieval to happen.
+# Read the shared inputs rendered in the app's Global User Input block.
 required_keys = (
-    "plot_area_type",
-    "plot_area_number",
-    "selected_start_month",
-    "selected_end_month",
+    "global_area_type",
+    "global_area_number",
+    "global_year_range",
 )
 
-# Defining behaviour if not all required user input is present.
 if not all(key in st.session_state for key in required_keys):
-    st.info("Select an area and date range on the Magasinstatistikk Data page first.")
+    st.info("Select an area and year range in the Global User Input block first.")
     st.stop()
 
-# Temporary limitation of program, will fix later.
-if st.session_state["plot_area_type"] != "EL":
+# Meteorological data is currently available for EL areas only.
+area_type = st.session_state["global_area_type"]
+area_number = st.session_state["global_area_number"]
+start_year, end_year = st.session_state["global_year_range"]
+if area_type != "EL":
     st.info("Meteorological data is available for EL areas only.")
     st.stop()
 
-# Retrieving user input.
-region = f"NO {st.session_state['plot_area_number']}"
-start_date = (
-    pd.Period(st.session_state["selected_start_month"], freq="M")
-    .start_time.strftime("%Y-%m-%d")
-)
-end_date = (
-    pd.Period(st.session_state["selected_end_month"], freq="M")
-    .end_time.date().isoformat()
-)
+region = f"NO {area_number}"
+start_date = f"{start_year}-01-01"
+end_date = f"{end_year}-12-31"
 include_elevation = st.checkbox(
     "Include Elevation (slower runtime, more accurate data)",
     value=False,
 )
 selection = (region, start_date, end_date, include_elevation)
+global_selection = (area_type, area_number, start_year, end_year)
 
-# Creating button.
 if st.button("Initiate data retrieval"):
     with st.status("Retrieving meteorological data...", expanded=True) as status:
         locations_by_region_el = sample_areas_el(
@@ -61,6 +54,7 @@ if st.button("Initiate data retrieval"):
 
         st.session_state["meteorological_data"] = weather_data
         st.session_state["meteorological_selection"] = selection
+        st.session_state["meteorological_global_selection"] = global_selection
 
         status.update(
             label="Data processing and retrieval complete.",
@@ -68,14 +62,21 @@ if st.button("Initiate data retrieval"):
             expanded=False,
         )
 
-# Printing progress messages.
-if st.session_state.get("meteorological_selection") == selection:
+if st.session_state.get("meteorological_global_selection") == global_selection:
     st.success(
         "Data processing and retrieval complete. "
         "Proceed to the meteorological analysis pages."
     )
-elif "meteorological_data" in st.session_state:
+elif "meteorological_global_selection" in st.session_state:
+    (
+        downloaded_area_type,
+        downloaded_area_number,
+        downloaded_start_year,
+        downloaded_end_year,
+    ) = st.session_state["meteorological_global_selection"]
     st.info(
-        "Stored data is for a different area or date range. "
-        "Initiate retrieval again for this selection."
+        "Stored data is for a different area or year range. "
+        f"Downloaded weather data for {downloaded_area_type} "
+        f"{downloaded_area_number} {downloaded_start_year}-"
+        f"{downloaded_end_year}."
     )
