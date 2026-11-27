@@ -101,9 +101,12 @@ st.write(
 )
 st.subheader("Reservoir metrics over time")
 chart_data = selected_data.copy()
+chart_columns = [column for column in selected_columns if column != "Filling Ratio"]
+if "Filling Ratio" in selected_columns:
+    chart_columns.append("Filling Ratio")
 st.line_chart(
     chart_data,
-    y=selected_columns,
+    y=chart_columns,
     x_label="Date",
     y_label="Metric value",
 )
