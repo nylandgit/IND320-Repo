@@ -77,11 +77,14 @@ with left_column:
     
     # Average the 15-minute MW readings within each hour before summing to MWh.
     hourly_flow = (
-        year_data.set_index("timestamp")
-        .groupby("direction")["flow_mw"]
+        year_data.pivot_table(
+            index="timestamp",
+            columns="direction",
+            values="flow_mw",
+            aggfunc="mean",
+        )
         .resample("1h")
         .mean()
-        .groupby(level="direction")
         .sum()
     )
     pie_data = (
