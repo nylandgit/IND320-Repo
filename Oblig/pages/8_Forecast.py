@@ -130,71 +130,32 @@ st.title("Reservoir Filling Forecast")
 st.write("Forecast Filling Ratio from the latest available observation.")
 
 df_mag = load_data()
-area_types = sorted(df_mag["Area Type"].dropna().unique().tolist())
-if not area_types:
-    st.warning("No area data is available.")
+area_type = st.session_state["global_area_type"]
+area_number = st.session_state["global_area_number"]
+year_start, year_end = st.session_state["global_year_range"]
+
+area_data = df_mag.loc[
+    (df_mag["Area Type"] == area_type)
+    & (df_mag["Area Number"] == area_number),
+    ["Date", "Filling Ratio"],
+].dropna().copy()
+area_data["Date"] = pd.to_datetime(area_data["Date"])
+area_data = area_data.sort_values("Date")
+
+if area_data.empty:
+    st.warning(f"No Filling Ratio data is available for {area_type} area {area_number}.")
     st.stop()
 
-default_area_type = "EL" if "EL" in area_types else area_types[0]
+train_start = pd.Timestamp(year=year_start, month=1, day=1)
+latest_area_date = area_data["Date"].max()
+if year_end == latest_area_date.year:
+    train_end = latest_area_date
+else:
+    train_end = pd.Timestamp(year=year_end, month=12, day=31)
 
-with st.expander("Parameter Settings", expanded=True):
-    area_type = st.selectbox(
-        "Area Type",
-        options=area_types,
-        index=area_types.index(default_area_type),
-    )
-    area_numbers = sorted(
-        df_mag.loc[df_mag["Area Type"] == area_type, "Area Number"]
-        .dropna()
-        .unique()
-        .tolist()
-    )
-    if not area_numbers:
-        st.warning(f"No area numbers are available for area type {area_type}.")
-        st.stop()
-    default_area_number = 3 if 3 in area_numbers else area_numbers[0]
-    area_number = st.selectbox(
-        "Area Number",
-        options=area_numbers,
-        index=area_numbers.index(default_area_number),
-    )
-
-    area_data = df_mag.loc[
-        (df_mag["Area Type"] == area_type)
-        & (df_mag["Area Number"] == area_number),
-        ["Date", "Filling Ratio"],
-    ].dropna().copy()
-    area_data["Date"] = pd.to_datetime(area_data["Date"])
-    area_data = area_data.sort_values("Date")
-    available_dates = area_data["Date"].drop_duplicates().tolist()
-
-    if not available_dates:
-        st.warning(f"No Filling Ratio data is available for {area_type} area {area_number}.")
-        st.stop()
-
-    train_start, train_end = st.select_slider(
-        "Training date range",
-        options=available_dates,
-        value=(available_dates[0], available_dates[-1]),
-        format_func=lambda date: date.strftime("%Y-%m-%d"),
-    )
-    horizon = st.slider("Horizon (weeks)", min_value=1, max_value=12, value=12)
-    resolution_option = st.select_slider(
-        "Resolution",
-        options=["1", "2", "M"],
-        value="1",
-        format_func=lambda option: {
-            "1": "1 week",
-            "2": "2 weeks",
-            "M": "Monthly",
-        }[option],
-    )
-    resolution = int(resolution_option) if resolution_option != "M" else "M"
-    st.selectbox(
-        "Model",
-        options=["Model selection coming soon"],
-        disabled=True,
-    )
+horizon = st.session_state.get("forecast_horizon", 12)
+resolution_option = st.session_state.get("forecast_resolution", "1")
+resolution = int(resolution_option) if resolution_option != "M" else "M"
 
 try:
     forecast = forecast_filling(
@@ -208,9 +169,9 @@ try:
     )
 except ValueError as error:
     st.warning(str(error))
-    st.stop()
+    forecast = None
 
-most_recent_date = area_data["Date"].max()
+most_recent_date = latest_area_date
 plot_start = most_recent_date - pd.DateOffset(years=2)
 plot_data = area_data.loc[area_data["Date"] >= plot_start]
 
@@ -223,14 +184,15 @@ fig.add_trace(
         name="Historical",
     )
 )
-fig.add_trace(
-    go.Scatter(
-        x=forecast["Date"],
-        y=forecast["Forecast"],
-        mode="lines+markers",
-        name="Forecast",
+if forecast is not None:
+    fig.add_trace(
+        go.Scatter(
+            x=forecast["Date"],
+            y=forecast["Forecast"],
+            mode="lines+markers",
+            name="Forecast",
+        )
     )
-)
 fig.update_layout(
     title=f"Filling Ratio Forecast - {area_type} area {area_number}",
     xaxis_title="Date",
@@ -238,3 +200,31 @@ fig.update_layout(
     template="plotly_white",
 )
 st.plotly_chart(fig, width="stretch")
+
+with st.expander("Parameter Settings", expanded=True):
+    st.write(
+        "Training data range is equal to selected year range in Global User Input."
+    )
+    st.slider(
+        "Horizon (weeks)",
+        min_value=1,
+        max_value=12,
+        value=12,
+        key="forecast_horizon",
+    )
+    st.select_slider(
+        "Resolution",
+        options=["1", "2", "M"],
+        value="1",
+        format_func=lambda option: {
+            "1": "1 week",
+            "2": "2 weeks",
+            "M": "Monthly",
+        }[option],
+        key="forecast_resolution",
+    )
+    st.selectbox(
+        "Model",
+        options=["Model selection coming soon"],
+        disabled=True,
+    )
