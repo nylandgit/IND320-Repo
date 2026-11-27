@@ -40,14 +40,12 @@ global_selection = (area_type, area_number, start_year, end_year)
 
 if st.button("Initiate data retrieval"):
     with st.status("Retrieving meteorological data...", expanded=True) as status:
-        locations_by_region_el = sample_areas_el(
-            progress_callback=status.write
-        )
+        locations_by_region_el = sample_areas_el()
         weather_data = download_region(
-            region,
-            start_date,
-            end_date,
-            locations_by_region_el,
+            region=region,
+            start_date=start_date,
+            end_date=end_date,
+            locations_by_region_el=locations_by_region_el,
             progress_callback=status.write,
             include_elevation=include_elevation,
         )
