@@ -90,6 +90,13 @@ if "global_year_range" not in st.session_state:
 if "global_month_range" not in st.session_state:
     st.session_state["global_month_range"] = (1, 12)
 
+# Apply map selections before their widgets are instantiated.
+if "pending_global_area_number" in st.session_state:
+    st.session_state["global_area_type"] = "EL"
+    st.session_state["global_area_number"] = st.session_state.pop(
+        "pending_global_area_number"
+    )
+
 left, right = st.columns([1, 4], gap="medium")
 
 with left:

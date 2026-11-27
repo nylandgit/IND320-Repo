@@ -49,9 +49,17 @@ def show_map(gdf, values, title, label, code):
         name = points[0]["location"]
         st.session_state.update(selected_map_area=name, selected_map_area_type=code)
         if code == "EL":
-            st.session_state.update(selected_el_area=name, selected_area_number=int(name[-1]))
-            st.session_state["global_area_type"] = "EL"
-            st.session_state["global_area_number"] = int(name[-1])
+            area_number = int(name[-1])
+            st.session_state.update(
+                selected_el_area=name,
+                selected_area_number=area_number,
+            )
+            if (
+                st.session_state["global_area_type"] != "EL"
+                or st.session_state["global_area_number"] != area_number
+            ):
+                st.session_state["pending_global_area_number"] = area_number
+                st.rerun()
         else:
             st.session_state["selected_weather_area"] = name
 
