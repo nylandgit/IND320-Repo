@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
-from river import linear_model, preprocessing
+from river import linear_model, preprocessing, tree
 
 from modules.api_mag import load_data
 
@@ -156,6 +156,12 @@ else:
 horizon = st.session_state.get("forecast_horizon", 12)
 resolution_option = st.session_state.get("forecast_resolution", "1")
 resolution = int(resolution_option) if resolution_option != "M" else "M"
+model_option = st.session_state.get("forecast_model", "StandardScaler | Linear")
+model = (
+    preprocessing.StandardScaler() | linear_model.LinearRegression()
+    if model_option == "StandardScaler | Linear"
+    else tree.HoeffdingTreeRegressor()
+)
 
 try:
     forecast = forecast_filling(
@@ -166,6 +172,7 @@ try:
         train_start=train_start,
         train_end=train_end,
         resolution=resolution,
+        model=model,
     )
 except ValueError as error:
     st.warning(str(error))
@@ -227,6 +234,6 @@ with st.expander("Parameter Settings", expanded=True):
     )
     st.selectbox(
         "Model",
-        options=["Model selection coming soon"],
-        disabled=True,
+        options=["StandardScaler | Linear", "Hoeffding Tree"],
+        key="forecast_model",
     )
