@@ -48,7 +48,7 @@ def plot_stl_decomposition(
             "Residual": np.asarray(result.resid),
         })
 
-    labels = ["Observed Filling Ratio", "Trend", "Seasonal", "Residual"]
+    labels = ["Observed", "Trend", "Seasonal", "Residual"]
 
     st.subheader(
         f"STL decomposition of {selected_column} - "
@@ -57,26 +57,22 @@ def plot_stl_decomposition(
 
     for label in labels:
         if label == "Observed":
-            fig = go.Figure(
-                go.Scatter(
-                    x=components["Date"],
-                    y=components["Observed"],
-                    mode="lines",
-                    name="Observed",
-                    line=dict(color="#ff2b2b"),
-                )
-            )
-            fig.update_layout(
-                xaxis_title="Date",
-                yaxis_title="Observed",
-                template="plotly_white",
-            )
-            st.plotly_chart(fig, width="stretch")
+            color = "#ff2b2b"
         else:
-            st.line_chart(
-                components,
-                x="Date",
-                y=label,
-                x_label="Date",
-                y_label=label,
+            color = None
+
+        fig = go.Figure(
+            go.Scatter(
+                x=components["Date"],
+                y=components[label],
+                mode="lines",
+                name=label,
+                line=dict(color=color) if color else None,
             )
+        )
+        fig.update_layout(
+            xaxis_title="Date",
+            yaxis_title=label,
+            template="plotly_white",
+        )
+        st.plotly_chart(fig, width="stretch")
